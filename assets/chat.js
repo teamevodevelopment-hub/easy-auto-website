@@ -1,9 +1,6 @@
-/* =========================================================
-   EASY AUTO — conversational apply form
-   Reusable engine mounted into either the popup modal
-   (index.html) or the standalone page (apply.html).
-   ========================================================= */
 const EasyAutoChat = (function(){
+
+  const SECONDS_PER_STEP = 7;
 
   const steps = [
     {
@@ -34,10 +31,29 @@ const EasyAutoChat = (function(){
       type:'chips', options:['Employed full-time','Employed part-time','Self-employed','On benefits / pension','Other']
     },
     {
+      key:'employerName',
+      skipIf: d => d.employment === 'On benefits / pension',
+      bot: d => [`And where do you ${d.employment === 'Self-employed' ? 'operate your business' : 'currently work'}? Just the name is fine.`],
+      type:'text', placeholder:'Employer or business name',
+      validate:v=>v.trim().length>0 ? null:'Just the name is fine, no need for details.'
+    },
+    {
       key:'income',
       bot: ["Roughly what's your gross monthly income? (An estimate is fine.)"],
       type:'text', inputType:'text', placeholder:'e.g. 3200',
       validate:v=> /^\$?\d[\d,]*$/.test(v.trim()) ? null : "Just a number works — e.g. 3200."
+    },
+    {
+      key:'housing',
+      bot: ["Do you rent, own, or live with family right now?"],
+      type:'chips', options:['Rent','Own','Live with family','Other']
+    },
+    {
+      key:'housingPayment',
+      skipIf: d => d.housing === 'Live with family' || d.housing === 'Other',
+      bot: d => [`What's your monthly ${d.housing === 'Own' ? 'mortgage' : 'rent'} payment?`],
+      type:'text', placeholder:'e.g. 1500',
+      validate:v=> /^\$?\d[\d,]*$/.test(v.trim()) ? null : "Just a number works — e.g. 1500."
     },
     {
       key:'credit',
@@ -46,13 +62,44 @@ const EasyAutoChat = (function(){
     },
     {
       key:'downpayment',
-      bot: ["Last one — got anything set aside for a down payment or trade-in?"],
+      bot: ["Got anything set aside for a down payment or trade-in?"],
       type:'chips', options:['$0 down','$500–$1,500','$1,500–$4,000','$4,000+']
+    },
+    {
+      key:'birthdate',
+      bot: ["Last one, just to confirm eligibility — what's your date of birth?"],
+      type:'text', placeholder:'MM/DD/YYYY',
+      validate: v => {
+        const m = v.trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+        if(!m) return "Use MM/DD/YYYY — e.g. 05/15/1990.";
+        const mm = parseInt(m[1],10), dd = parseInt(m[2],10), yyyy = parseInt(m[3],10);
+        const dob = new Date(yyyy, mm-1, dd);
+        if(isNaN(dob.getTime()) || dob.getMonth() !== mm-1) return "That date doesn't look right.";
+        const ageMs = Date.now() - dob.getTime();
+        const age = ageMs / (365.25*24*3600*1000);
+        if(age < 18) return "You need to be 18 or older to apply.";
+        if(age > 100) return "Double check that date — that doesn't look right.";
+        return null;
+      }
     },
   ];
 
-  function mount({ chatBody, inputArea, progressBar, onComplete }){
-    const state = { stepIndex:0, data:{} };
+  function visibleSteps(fromIndex, data){
+    const list = [];
+    for(let i=fromIndex;i<steps.length;i++){
+      const s = steps[i];
+      if(s.skipIf && s.skipIf(data)) continue;
+      list.push(s);
+    }
+    return list;
+  }
+
+  function totalVisibleCount(data){
+    return visibleSteps(0, data).length;
+  }
+
+  function mount({ chatBody, inputArea, progressBar, countdownEl, onComplete }){
+    const state = { stepIndex:0, data:{}, answeredCount:0 };
 
     function scrollToBottom(){ chatBody.scrollTop = chatBody.scrollHeight; }
 
@@ -78,16 +125,39 @@ const EasyAutoChat = (function(){
     }
 
     function updateProgress(){
-      const pct = Math.min(100, Math.round((state.stepIndex / steps.length) * 100));
+      const total = totalVisibleCount({});
+      const pct = Math.min(100, Math.round((state.answeredCount / total) * 100));
       if(progressBar) progressBar.style.width = pct + '%';
+    }
+
+    function updateCountdown(){
+      if(!countdownEl) return;
+      const remaining = visibleSteps(state.stepIndex, state.data).length;
+      const secs = remaining * SECONDS_PER_STEP;
+      if(remaining <= 0){
+        countdownEl.textContent = 'Almost done';
+      } else if(secs <= 15){
+        countdownEl.textContent = 'Almost done — just a few more seconds';
+      } else {
+        countdownEl.textContent = `About ${secs} seconds from finish`;
+      }
+    }
+
+    function currentStep(){
+      while(state.stepIndex < steps.length && steps[state.stepIndex].skipIf && steps[state.stepIndex].skipIf(state.data)){
+        state.stepIndex++;
+      }
+      return steps[state.stepIndex];
     }
 
     function renderStep(){
       inputArea.innerHTML = '';
+      updateCountdown();
       updateProgress();
-      if(state.stepIndex >= steps.length){ renderReview(); return; }
 
-      const step = steps[state.stepIndex];
+      const step = currentStep();
+      if(!step){ renderReview(); return; }
+
       const botLines = typeof step.bot === 'function' ? step.bot(state.data) : step.bot;
 
       showTyping();
@@ -98,6 +168,13 @@ const EasyAutoChat = (function(){
         });
         setTimeout(()=> renderInputFor(step), botLines.length*550 + 150);
       }, 550);
+    }
+
+    function advance(step, value){
+      state.data[step.key] = value;
+      state.answeredCount++;
+      state.stepIndex++;
+      renderStep();
     }
 
     function renderInputFor(step){
@@ -111,9 +188,7 @@ const EasyAutoChat = (function(){
           chip.textContent = opt;
           chip.addEventListener('click', ()=>{
             addBubble(opt, 'user');
-            state.data[step.key] = opt;
-            state.stepIndex++;
-            renderStep();
+            advance(step, opt);
           });
           row.appendChild(chip);
         });
@@ -136,9 +211,7 @@ const EasyAutoChat = (function(){
           const errMsg = step.validate ? step.validate(val) : null;
           if(errMsg){ err.textContent = errMsg; err.style.display = 'block'; input.focus(); return; }
           addBubble(val.trim(), 'user');
-          state.data[step.key] = val.trim();
-          state.stepIndex++;
-          renderStep();
+          advance(step, val.trim());
         }
         sendBtn.addEventListener('click', submit);
         input.addEventListener('keydown', (e)=>{ if(e.key==='Enter') submit(); });
@@ -153,6 +226,7 @@ const EasyAutoChat = (function(){
 
     function renderReview(){
       inputArea.innerHTML = '';
+      if(countdownEl) countdownEl.textContent = 'Ready to run your file';
       showTyping();
       setTimeout(()=>{
         hideTyping();
@@ -176,18 +250,12 @@ const EasyAutoChat = (function(){
     function submitLead(){
       inputArea.innerHTML = '<div style="text-align:center; color:var(--slate-dim); font-family:var(--mono); font-size:12.5px; padding:6px 0;">Scanning the lender network…</div>';
 
-      /* ------------------------------------------------------------------
-         LEAD PAYLOAD — send this to your real backend.
-         Wire this into your CRM / webhook / lender intake here.
-         Currently this only logs to the console as a placeholder.
-         ------------------------------------------------------------------ */
       const leadPayload = {
         ...state.data,
         source: window.location.pathname,
         submittedAt: new Date().toISOString()
       };
       console.log('Easy Auto lead captured (wire this to your CRM):', leadPayload);
-      // Example of where a real submission would go:
       // fetch('https://your-endpoint.example/api/leads', {
       //   method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(leadPayload)
       // });
@@ -199,6 +267,7 @@ const EasyAutoChat = (function(){
       chatBody.innerHTML = '';
       inputArea.innerHTML = '';
       if(progressBar) progressBar.style.width = '100%';
+      if(countdownEl) countdownEl.textContent = 'Done!';
 
       const wrap = document.createElement('div');
       wrap.className = 'success-screen';
@@ -232,7 +301,7 @@ const EasyAutoChat = (function(){
     }
 
     return {
-      start(){ updateProgress(); renderStep(); }
+      start(){ updateCountdown(); updateProgress(); renderStep(); }
     };
   }
 

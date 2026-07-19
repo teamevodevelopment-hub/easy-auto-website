@@ -39,6 +39,7 @@
         </div>
         <a href="index.html" class="chat-close" aria-label="Back to homepage" title="Back to homepage">✕</a>
       </div>
+      <div class="chat-countdown" id="chat-countdown">About 90 seconds from finish</div>
       <div class="chat-progress"><div class="chat-progress-bar" id="chat-progress-bar"></div></div>
       <div class="chat-body" id="chat-body"></div>
       <div class="chat-input-area" id="chat-input-area"></div>
@@ -58,6 +59,7 @@
     chatBody: document.getElementById('chat-body'),
     inputArea: document.getElementById('chat-input-area'),
     progressBar: document.getElementById('chat-progress-bar'),
+    countdownEl: document.getElementById('chat-countdown'),
     onComplete: ()=>{ window.location.href = 'index.html'; }
   });
   chatInstance.start();

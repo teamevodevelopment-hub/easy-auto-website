@@ -368,6 +368,7 @@ footer{ padding:60px 0 40px; border-top:1px solid var(--line); margin-top:80px; 
 .chat-head-text .status .dot{ width:6px; height:6px; border-radius:50%; background:var(--green); }
 .chat-close{ width:32px; height:32px; border-radius:10px; border:1px solid var(--line-strong); background:#fff; color:var(--slate); display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
 .chat-close:hover{ background:var(--sky-2); color:var(--ink); }
+.chat-countdown{ text-align:center; font-family:var(--mono); font-size:11px; color:var(--blue-deep); background:var(--sky); padding:6px 0; letter-spacing:.03em; transition:color .2s; }
 .chat-progress{ height:3px; background:var(--sky); flex-shrink:0; }
 .chat-progress-bar{ height:100%; background:linear-gradient(90deg, var(--blue), var(--green)); width:0%; transition:width .4s ease; }
 .chat-body{ flex-grow:1; overflow-y:auto; padding:22px 20px; display:flex; flex-direction:column; gap:14px; background:#fff; }
