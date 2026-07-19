@@ -32,8 +32,6 @@ const LENDER_DATA = [
   { name:"EdenPark", type:"Subprime", logo:null },
   { name:"Santander Consumer Canada", type:"Near-Prime", logo:null },
   { name:"AutoCapital Canada", type:"Subprime", logo:null },
-  { name:"TD Non-Prime", type:"Non-Prime", logo:null },
-  { name:"SDA", type:"Non-Prime", logo:null },
   { name:"NorthLake Financial", type:"Subprime", logo:null },
   { name:"RIFCO", type:"Subprime", logo:null },
   { name:"Iceberg Finance", type:"Subprime", logo:null },
