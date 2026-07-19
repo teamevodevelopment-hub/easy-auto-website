@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apply Now — Get Your Approval Odds | Easy Auto</title>
+<meta name="description" content="Get your low credit car finance approval odds in minutes. No long forms, no hard credit pull to start.">
+<link rel="canonical" href="https://www.easyauto.ca/apply.html">
+<meta name="theme-color" content="#2F6FE4">
+<meta name="robots" content="noindex, follow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/styles.css">
+<link rel="icon" href="assets/logo.png" type="image/png">
+<style>
+  /* standalone tweaks: no backdrop/overlay chrome, chat card is the page */
+  body{ background:linear-gradient(180deg, var(--sky), #fff 55%); min-height:100vh; }
+  .mini-header{ display:flex; justify-content:center; padding:26px 20px 0; }
+</style>
+</head>
+<body>
+
+<h1 class="sr-only">Apply for Low Credit Car Finance — Easy Auto</h1>
+<div class="mini-header">
+  <a href="index.html" class="logo">
+    <img src="assets/logo.png" alt="Easy Auto — Automotive Finance Managers" class="site-logo">
+  </a>
+</div>
+
+<div class="apply-page-wrap">
+  <div class="apply-page-inner">
+    <div class="chat-modal standalone" role="region" aria-label="Apply now conversational form">
+      <div class="chat-head">
+        <div class="chat-avatar">E</div>
+        <div class="chat-head-text">
+          <div class="name">Easy Auto Assistant</div>
+          <div class="status"><span class="dot"></span>Online now</div>
+        </div>
+        <a href="index.html" class="chat-close" aria-label="Back to homepage" title="Back to homepage">✕</a>
+      </div>
+      <div class="chat-progress"><div class="chat-progress-bar" id="chat-progress-bar"></div></div>
+      <div class="chat-body" id="chat-body"></div>
+      <div class="chat-input-area" id="chat-input-area"></div>
+    </div>
+    <div class="apply-trust">
+      <span>🔒 No SSN required to start</span>
+      <span>⚡ Won't affect your credit score</span>
+      <span>👤 A real finance manager calls you back</span>
+    </div>
+  </div>
+</div>
+
+<script src="assets/app.js"></script>
+<script src="assets/chat.js"></script>
+<script>
+  const chatInstance = EasyAutoChat.mount({
+    chatBody: document.getElementById('chat-body'),
+    inputArea: document.getElementById('chat-input-area'),
+    progressBar: document.getElementById('chat-progress-bar'),
+    onComplete: ()=>{ window.location.href = 'index.html'; }
+  });
+  chatInstance.start();
+</script>
+</body>
+</html>

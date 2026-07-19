@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /apply.html
+
+Sitemap: https://www.easyauto.ca/sitemap.xml
