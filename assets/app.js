@@ -176,14 +176,35 @@ document.addEventListener('DOMContentLoaded', ()=>{
   });
 });
 
-/* ---- lender wall render ---- */
+/* ---- lender carousel render: two rows, opposite directions, seamless loop ---- */
 document.addEventListener('DOMContentLoaded', ()=>{
-  const wall = document.getElementById('lender-wall');
-  if(!wall || typeof LENDER_DATA === 'undefined') return;
-  wall.innerHTML = LENDER_DATA.map(l=>`
-    <div class="lender-tile">
-      <div><div class="lt-name">${l.name}</div><div class="lt-type">${l.type}</div></div>
-    </div>`).join('');
+  const carousel = document.getElementById('lender-carousel');
+  if(!carousel || typeof LENDER_DATA === 'undefined') return;
+
+  function slugify(name){
+    return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  }
+  function tileHTML(l){
+    const src = l.logo || `assets/lenders/${slugify(l.name)}.png`;
+    return `<div class="lender-tile">
+      <div class="lt-logo-box" style="display:none;">
+        <img src="${src}" alt="${l.name}" onload="this.parentElement.style.display='flex'; this.closest('.lender-tile').querySelector('.lt-fallback').style.display='none';">
+      </div>
+      <div class="lt-fallback"><div class="lt-name">${l.name}</div><div class="lt-type">${l.type}</div></div>
+    </div>`;
+  }
+
+  const half = Math.ceil(LENDER_DATA.length / 2);
+  const rowA = LENDER_DATA.slice(0, half);
+  const rowB = LENDER_DATA.slice(half);
+
+  const rowAHTML = rowA.map(tileHTML).join('');
+  const rowBHTML = rowB.map(tileHTML).join('');
+
+  carousel.innerHTML = `
+    <div class="lender-row row-left"><div class="track">${rowAHTML}${rowAHTML}</div></div>
+    <div class="lender-row row-right"><div class="track">${rowBHTML}${rowBHTML}</div></div>
+  `;
 });
 
 /* ---- gallery render (shared by homepage preview + full gallery page) ----
