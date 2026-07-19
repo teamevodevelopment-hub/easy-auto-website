@@ -257,12 +257,28 @@ h2{ font-family:var(--display); font-weight:700; font-size:clamp(1.85rem, 3.2vw,
 /* --- article hero image placeholder --- */
 .article-hero{
   width:100%; aspect-ratio:16/8; border-radius:18px; margin-bottom:8px;
-  background:linear-gradient(135deg, var(--sky), var(--sky-3));
-  display:flex; align-items:center; justify-content:center; flex-direction:column; gap:8px;
+  background:
+    radial-gradient(500px 300px at 15% 10%, rgba(47,111,228,0.10), transparent 60%),
+    radial-gradient(400px 260px at 90% 90%, rgba(31,169,104,0.08), transparent 60%),
+    linear-gradient(135deg, var(--sky), #fff 60%, var(--sky-2));
+  position:relative; overflow:hidden;
   border:1px solid var(--sky-3);
 }
-.article-hero .ph-label{ font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--blue-deep); opacity:.7; }
-.article-hero .ph-sub{ font-size:12px; color:var(--slate-dim); }
+.article-hero .hero-dots{ position:absolute; inset:0; opacity:.5;
+  background-image:radial-gradient(var(--sky-3) 1.5px, transparent 1.5px);
+  background-size:22px 22px;
+  -webkit-mask-image:radial-gradient(ellipse at center, #000 0%, transparent 72%);
+  mask-image:radial-gradient(ellipse at center, #000 0%, transparent 72%);
+}
+.article-hero svg{ position:relative; z-index:1; width:100%; height:100%; }
+.article-hero .ph-tag{
+  position:absolute; top:14px; left:14px; z-index:2;
+  display:flex; align-items:center; gap:6px;
+  font-family:var(--mono); font-size:10px; text-transform:uppercase; letter-spacing:.06em;
+  color:var(--blue-deep); background:rgba(255,255,255,0.85); border:1px solid var(--sky-3);
+  padding:5px 10px; border-radius:999px; backdrop-filter:blur(4px);
+}
+.article-hero .ph-tag .dot{ width:5px; height:5px; border-radius:50%; background:var(--blue); }
 .article-hero-caption{ font-size:12px; color:var(--slate-dim); text-align:center; margin-bottom:8px; }
 
 /* --- table of contents --- */
