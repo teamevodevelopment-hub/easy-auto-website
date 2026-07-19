@@ -136,11 +136,12 @@ h1 .strike{ color:var(--slate-dim); }
 .gauge-title{ font-family:var(--mono); font-size:11.5px; letter-spacing:0.08em; text-transform:uppercase; color:var(--slate-dim); }
 .gauge-live{ display:flex; align-items:center; gap:6px; font-family:var(--mono); font-size:10.5px; color:var(--green); }
 .gauge-live .dot{ width:6px; height:6px; border-radius:50%; background:var(--green); box-shadow:0 0 8px rgba(31,169,104,0.5); animation:pulse 1.5s infinite; }
-.gauge-wrap{ position:relative; width:100%; max-width:340px; margin:8px auto 4px; }
-.gauge-readout{ text-align:center; margin-top:-56px; position:relative; z-index:2; }
-.gauge-readout .num{ font-family:var(--mono); font-weight:600; font-size:38px; letter-spacing:-0.01em; color:var(--ink); }
+.gauge-wrap{ position:relative; width:100%; max-width:340px; margin:8px auto 4px; display:grid; }
+.gauge-wrap > svg{ grid-area:1/1; }
+.gauge-readout{ grid-area:1/1; align-self:center; margin-top:-8px; text-align:center; position:relative; z-index:2; pointer-events:none; }
+.gauge-readout .num{ font-family:var(--mono); font-weight:600; font-size:38px; line-height:1.1; letter-spacing:-0.01em; color:var(--ink); }
 .gauge-readout .num .pct{ font-size:20px; color:var(--slate); }
-.gauge-readout .cap{ font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:var(--slate-dim); margin-top:4px; }
+.gauge-cap{ text-align:center; font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:var(--slate-dim); margin-top:2px; }
 .gauge-legend{ display:flex; justify-content:space-between; margin-top:18px; padding-top:16px; border-top:1px solid var(--line); }
 .legend-item{ text-align:center; flex:1; }
 .legend-item .v{ font-family:var(--mono); font-size:15px; font-weight:600; }
