@@ -2,6 +2,32 @@
    EASY AUTO — shared page utilities
    ========================================================= */
 
+/* ---- first-touch attribution capture ----
+   Runs once per browser session (not once per page) so if someone
+   clicks a Facebook/Google ad and lands on the homepage, then later
+   clicks through to /apply.html, the ORIGINAL ad's UTM params, GCLID,
+   and referrer are still remembered — not overwritten by internal
+   navigation. Read back out by assets/chat.js when building the
+   webhook payload. */
+(function captureFirstTouch(){
+  try{
+    if(sessionStorage.getItem('easyauto_first_touch_done')) return;
+    const params = new URLSearchParams(window.location.search);
+    const firstTouch = {
+      landingPageUrl: window.location.href,
+      referrerUrl: document.referrer || '',
+      utmSource: params.get('utm_source') || '',
+      utmMedium: params.get('utm_medium') || '',
+      utmCampaign: params.get('utm_campaign') || '',
+      utmTerm: params.get('utm_term') || '',
+      utmContent: params.get('utm_content') || '',
+      gclid: params.get('gclid') || ''
+    };
+    sessionStorage.setItem('easyauto_first_touch', JSON.stringify(firstTouch));
+    sessionStorage.setItem('easyauto_first_touch_done', '1');
+  }catch(e){ /* sessionStorage unavailable (e.g. private browsing) — attribution fields will just be blank */ }
+})();
+
 /* ---- scroll reveal ---- */
 document.addEventListener('DOMContentLoaded', ()=>{
   const revealEls = document.querySelectorAll('.reveal');

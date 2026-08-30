@@ -8,6 +8,151 @@ const EasyAutoChat = (function(){
   const SECONDS_PER_STEP = 4;
   const NO_COMPANY = ['Retired','Other benefits income'];
 
+  /* ------------------------------------------------------------------
+     WEBHOOK — every completed application POSTs here automatically.
+     This is a GoHighLevel / LeadConnector inbound webhook trigger.
+     See the field mapping reference doc for what each key means and
+     how to map it inside your GHL workflow.
+     ------------------------------------------------------------------ */
+  const LEAD_WEBHOOK_URL = 'https://services.leadconnectorhq.com/hooks/9VGMfYkcETBlryI0dWob/webhook-trigger/1a300573-2eae-479e-975f-5b1f6597f0ec';
+
+  function splitName(full){
+    const parts = (full || '').trim().split(/\s+/);
+    return { firstName: parts[0] || '', lastName: parts.slice(1).join(' ') || '' };
+  }
+
+  function getFirstTouch(){
+    try{
+      const raw = sessionStorage.getItem('easyauto_first_touch');
+      return raw ? JSON.parse(raw) : {};
+    }catch(e){ return {}; }
+  }
+
+  /* ------------------------------------------------------------------
+     Payload shape matches the existing GoHighLevel/LeadConnector field
+     schema already in use for other lead sources (see the mapping
+     reference doc). Every field from that schema is included here, even
+     ones this form doesn't collect — left as "" so the GHL workflow's
+     field mapping never hits a missing key. Fields this form genuinely
+     doesn't ask about (trade-in details, vehicle-of-interest details,
+     SIN, previous address, etc.) are intentionally blank, not omitted.
+     ------------------------------------------------------------------ */
+  function buildWebhookPayload(data, meta){
+    const { firstName, lastName } = splitName(data.name);
+    const ft = getFirstTouch();
+
+    return {
+      "Lead ID": meta.sessionId,
+      "First Name": firstName,
+      "Last Name": lastName,
+      "Phone": data.phone || '',
+      "Email": data.email || '',
+      "Lead Provider": "Easy Auto Website",
+      "Contact Source": "Easy Auto Website",
+      "Lead Type": "Finance Application",
+      "Lead Assignment": "",
+      "Vehicle Images": "",
+      "Title Status": "",
+      "Accident History": "",
+      "Buying Time Frame": "",
+      "Consent for Credit Check": "",
+      "Date Of Birth": data.birthdate || '',
+      "Social Insurance Number": "",
+      "Time at Current Address": "",
+      "Residence Type": "",
+      "Monthly Housing Payment": "",
+      "Previous Address": "",
+      "Employer Name": data.companyName || '',
+      "Employment Status": data.employment || '',
+      "Job Title": data.position || '',
+      "Time With Employer": data.timeAtJob || '',
+      "Monthly Income": data.income || '',
+      "Additional Income": "",
+      "Previous Employer": "",
+      "Estimated Credit Range": "",
+      "Monthly Debt Payments": "",
+      "Proof Of Income": "",
+      "Credit Notes": "",
+      "Target Budget": "",
+      "Purchase Type": "",
+      "Financing Type": "",
+      "Notes": `Lead status: ${meta.status} (${meta.percentComplete}% of form completed)`,
+      "Lead Origin URL": ft.landingPageUrl || window.location.href,
+      "Drivers License": "",
+      "Objection": "",
+      "Contact Type": "",
+      "Time Zone": (Intl && Intl.DateTimeFormat) ? Intl.DateTimeFormat().resolvedOptions().timeZone : "",
+      "Website": window.location.hostname,
+      "Business Name": "Easy Auto",
+      "Quotes": "",
+      "Street Address": data.address || '',
+      "City": "",
+      "Country": "",
+      "Postal Code": "",
+      "Province Code": "",
+      "Province Name": "",
+      "Trade Consideration": "",
+      "Trade Reason": "",
+      "Trade Buyout": "",
+      "Trade Payments": "",
+      "Trade Year": "",
+      "Trade Make": "",
+      "Trade Model": "",
+      "Trade Trim": "",
+      "Trade Mileage": "",
+      "Trade VIN": "",
+      "Trade Min Value": "",
+      "Trade Fair Value": "",
+      "Trade Max Value": "",
+      "Trade Condition": "",
+      "Trade Exterior Color": "",
+      "Trade Interior Color": "",
+      "Trade Fuel Type": "",
+      "Trade Engine Size": "",
+      "Trade Transmission Type": "",
+      "Trade Drive Type": "",
+      "Trade Body Style": "",
+      "VOI Stock Number": "",
+      "VOI Year": "",
+      "VOI Make": "",
+      "VOI Model": "",
+      "VOI Trim": "",
+      "VOI Price": "",
+      "VOI VIN": "",
+      "VOI Website Link": "",
+      "VOI Mileage": "",
+      "VOI Condition": "",
+      "VOI Exterior Color": "",
+      "VOI Interior Color": "",
+      "VOI Fuel Type": "",
+      "VOI Engine Size": "",
+      "VOI Transmission Type": "",
+      "VOI Drive Type": "",
+      "VOI Body Style": "",
+      "Requested Test Drive Date": "",
+      "Requested Test Drive Time Preference": "",
+      "Assigned To": "",
+      "User Agent": navigator.userAgent || '',
+      "UTM Source": ft.utmSource || '',
+      "UTM Medium": ft.utmMedium || '',
+      "UTM Campaign": ft.utmCampaign || '',
+      "UTM Term": ft.utmTerm || '',
+      "UTM Content": ft.utmContent || '',
+      "Landing Page URL": ft.landingPageUrl || window.location.href,
+      "Referrer URL": ft.referrerUrl || '',
+      "Tracking URL": "",
+      "GCLID": ft.gclid || ''
+    };
+  }
+
+  function postToWebhook(payload){
+    fetch(LEAD_WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }).catch(err => console.error('Easy Auto webhook failed to send:', err));
+  }
+
   function firstNameOf(d){
     if(!d.name) return 'there';
     return d.name.trim().split(/\s+/)[0];
@@ -181,10 +326,17 @@ const EasyAutoChat = (function(){
       try{
         localStorage.setItem('easyauto_partial_' + state.sessionId, JSON.stringify(payload));
       }catch(e){ /* localStorage unavailable — safe to ignore, console.log above still ran */ }
-      // Example of where a real autosave submission would go:
-      // fetch('https://your-endpoint.example/api/leads/partial', {
-      //   method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)
-      // });
+      // OPTIONAL — send partial progress to the same webhook too, so
+      // abandoned applications (someone who only got halfway through)
+      // still reach you. Left OFF by default on purpose: your
+      // LeadConnector workflow will fire once per webhook hit, so
+      // turning this on means it fires on EVERY answered question, not
+      // just at the end — which could mean multiple texts/emails/tags
+      // firing per applicant if your workflow does something per-hit.
+      // If you want this, either build a separate GHL workflow that
+      // only acts on leadStatus:"partial" the first time it sees a
+      // sessionId, or uncomment the line below to send every step:
+      // postToWebhook(buildWebhookPayload(state.data, { status:'partial', percentComplete, sessionId: state.sessionId }));
     }
 
     function currentStep(){
@@ -319,11 +471,6 @@ const EasyAutoChat = (function(){
     function submitLead(){
       inputArea.innerHTML = '<div style="text-align:center; color:var(--slate-dim); font-family:var(--mono); font-size:12.5px; padding:6px 0;">Scanning the lender network…</div>';
 
-      /* ------------------------------------------------------------------
-         LEAD PAYLOAD — send this to your real backend.
-         Wire this into your CRM / webhook / lender intake here.
-         Currently this only logs to the console as a placeholder.
-         ------------------------------------------------------------------ */
       const leadPayload = {
         sessionId: state.sessionId,
         status: 'complete',
@@ -332,13 +479,10 @@ const EasyAutoChat = (function(){
         source: window.location.pathname,
         submittedAt: new Date().toISOString()
       };
-      console.log('Easy Auto COMPLETE lead captured (wire this to your CRM):', leadPayload);
+      console.log('Easy Auto COMPLETE lead captured:', leadPayload);
       try{ localStorage.removeItem('easyauto_partial_' + state.sessionId); }catch(e){}
-      // Example of where a real submission would go:
-      // fetch('https://your-endpoint.example/api/leads', {
-      //   method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(leadPayload)
-      // });
 
+      postToWebhook(buildWebhookPayload(state.data, { status:'complete', percentComplete:100, sessionId: state.sessionId }));
       setTimeout(renderSuccess, 1900);
     }
 
