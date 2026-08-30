@@ -7,19 +7,11 @@
    it from their official media/brand kit, or your partner
    agreement — check their brand guidelines first):
 
-   1. Save the logo image into assets/lenders/ using the exact
-      filename shown below for that lender (e.g. assets/lenders/rbc.png)
-   2. That's it — save the file with that exact name and the
-      carousel will automatically detect and display it, no code
-      changes needed. The "logo" field below is only needed if you
-      want to override the auto-detected filename.
-
-   Expected filenames (must match exactly):
-   desjardins.png, bnc.png, scotiabank-prime.png, rbc.png, cibc.png,
-   td-prime.png, ia-auto-finance.png, edenpark.png,
-   santander-consumer-canada.png, autocapital-canada.png,
-   td-non-prime.png, sda.png, northlake-financial.png, rifco.png,
-   iceberg-finance.png, quantifi.png, access-credit-leasing.png
+   1. Save the logo image into assets/lenders/ (e.g. assets/lenders/td.png)
+   2. Set that entry's "logo" field to the path, e.g.
+      logo:"assets/lenders/td.png"
+   3. Save — the carousel swaps from text to the logo image
+      automatically, no other changes needed.
    ========================================================= */
 const LENDER_DATA = [
   { name:"Desjardins", type:"Prime", logo:null },

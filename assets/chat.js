@@ -1,16 +1,26 @@
+/* =========================================================
+   EASY AUTO — conversational apply form
+   Reusable engine mounted into either the popup modal
+   (index.html) or the standalone page (apply.html).
+   ========================================================= */
 const EasyAutoChat = (function(){
 
   const SECONDS_PER_STEP = 7;
 
+  function firstNameOf(d){
+    if(!d.name) return 'there';
+    return d.name.trim().split(/\s+/)[0];
+  }
+
   const steps = [
     {
-      key:'firstName',
-      bot: ["Hi! I'm here to help get you approved 👋", "Let's find your approval odds — quick chat, no long forms. First, what's your first name?"],
-      type:'text', placeholder:'Your first name', validate:v=>v.trim().length>0 ? null:'Just need a first name to get started.'
+      key:'name',
+      bot: ["Hi! I'm here to help get you approved 👋", "Let's find your approval odds — quick chat, no long forms. What's your full name?"],
+      type:'text', placeholder:'Your full name', validate:v=>v.trim().length>1 ? null:'Just need your name to get started.'
     },
     {
       key:'phone',
-      bot: d=>[`Nice to meet you, ${d.firstName}! What's the best number to text or call you at?`],
+      bot: d=>[`Nice to meet you, ${firstNameOf(d)}! What's the best number to text or call you at?`],
       type:'text', inputType:'tel', placeholder:'(555) 555-5555',
       validate:v=>/^[\d\s\-\(\)\+]{7,}$/.test(v.trim()) ? null : "That doesn't look like a valid phone number."
     },
@@ -21,19 +31,14 @@ const EasyAutoChat = (function(){
       validate:v=> /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()) ? null : "That doesn't look like a valid email."
     },
     {
-      key:'vehicle',
-      bot: ["What are you hoping to drive?"],
-      type:'chips', options:['Sedan / Car','SUV','Truck','Not sure yet — show me options']
+      key:'address',
+      bot: ["What's your address? Start typing and pick it from the list, or just type it in yourself."],
+      type:'address', placeholder:'Start typing your address…',
+      validate:v=>v.trim().length>4 ? null : 'Just need your street address and city.'
     },
     {
-      key:'employment',
-      bot: ["Quick one on income — how are you currently earning?"],
-      type:'chips', options:['Employed full-time','Employed part-time','Self-employed','On benefits / pension','Other']
-    },
-    {
-      key:'employerName',
-      skipIf: d => d.employment === 'On benefits / pension',
-      bot: d => [`And where do you ${d.employment === 'Self-employed' ? 'operate your business' : 'currently work'}? Just the name is fine.`],
+      key:'employer',
+      bot: ["Who's your employer? (Business name is fine if you're self-employed.)"],
       type:'text', placeholder:'Employer or business name',
       validate:v=>v.trim().length>0 ? null:'Just the name is fine, no need for details.'
     },
@@ -44,43 +49,9 @@ const EasyAutoChat = (function(){
       validate:v=> /^\$?\d[\d,]*$/.test(v.trim()) ? null : "Just a number works — e.g. 3200."
     },
     {
-      key:'housing',
-      bot: ["Do you rent, own, or live with family right now?"],
-      type:'chips', options:['Rent','Own','Live with family','Other']
-    },
-    {
-      key:'housingPayment',
-      skipIf: d => d.housing === 'Live with family' || d.housing === 'Other',
-      bot: d => [`What's your monthly ${d.housing === 'Own' ? 'mortgage' : 'rent'} payment?`],
-      type:'text', placeholder:'e.g. 1500',
-      validate:v=> /^\$?\d[\d,]*$/.test(v.trim()) ? null : "Just a number works — e.g. 1500."
-    },
-    {
-      key:'credit',
-      bot: ["No judgment here — how would you describe your credit situation right now?"],
-      type:'chips', options:['Pretty good, just want a better rate','Fair / a few dings','Rebuilding after a rough patch','No credit history yet','Not sure']
-    },
-    {
-      key:'downpayment',
-      bot: ["Got anything set aside for a down payment or trade-in?"],
-      type:'chips', options:['$0 down','$500–$1,500','$1,500–$4,000','$4,000+']
-    },
-    {
-      key:'birthdate',
-      bot: ["Last one, just to confirm eligibility — what's your date of birth?"],
-      type:'text', placeholder:'MM/DD/YYYY',
-      validate: v => {
-        const m = v.trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-        if(!m) return "Use MM/DD/YYYY — e.g. 05/15/1990.";
-        const mm = parseInt(m[1],10), dd = parseInt(m[2],10), yyyy = parseInt(m[3],10);
-        const dob = new Date(yyyy, mm-1, dd);
-        if(isNaN(dob.getTime()) || dob.getMonth() !== mm-1) return "That date doesn't look right.";
-        const ageMs = Date.now() - dob.getTime();
-        const age = ageMs / (365.25*24*3600*1000);
-        if(age < 18) return "You need to be 18 or older to apply.";
-        if(age > 100) return "Double check that date — that doesn't look right.";
-        return null;
-      }
+      key:'timeAtJob',
+      bot: ["And how long have you been there?"],
+      type:'chips', options:['Less than 6 months','6 months – 1 year','1 – 3 years','3+ years']
     },
   ];
 
@@ -177,6 +148,24 @@ const EasyAutoChat = (function(){
       renderStep();
     }
 
+    /* ---- optional Google Places Autocomplete, activates automatically
+       if a Maps+Places script with an API key has been loaded on the
+       page. If not present, the field just behaves as plain manual
+       text entry — nothing breaks either way. ---- */
+    function attachAddressAutocomplete(input){
+      if(typeof google === 'undefined' || !google.maps || !google.maps.places) return;
+      try{
+        const ac = new google.maps.places.Autocomplete(input, {
+          types: ['address'],
+          componentRestrictions: { country: ['ca'] }
+        });
+        ac.addListener('place_changed', ()=>{
+          const place = ac.getPlace();
+          if(place && place.formatted_address){ input.value = place.formatted_address; }
+        });
+      }catch(e){ /* Places script present but failed to init — silently fall back to manual entry */ }
+    }
+
     function renderInputFor(step){
       inputArea.innerHTML = '';
       if(step.type === 'chips'){
@@ -199,6 +188,7 @@ const EasyAutoChat = (function(){
         const input = document.createElement('input');
         input.type = step.inputType || 'text';
         input.placeholder = step.placeholder || '';
+        if(step.type === 'address') input.autocomplete = 'off';
         const err = document.createElement('div');
         err.className = 'input-error';
 
@@ -220,6 +210,15 @@ const EasyAutoChat = (function(){
         row.appendChild(sendBtn);
         inputArea.appendChild(row);
         inputArea.appendChild(err);
+
+        if(step.type === 'address'){
+          const hint = document.createElement('div');
+          hint.className = 'hint-note';
+          hint.textContent = "Can't find it in the list? Just finish typing it and press enter.";
+          inputArea.appendChild(hint);
+          attachAddressAutocomplete(input);
+        }
+
         setTimeout(()=>input.focus(), 100);
       }
     }
@@ -230,7 +229,7 @@ const EasyAutoChat = (function(){
       showTyping();
       setTimeout(()=>{
         hideTyping();
-        addBubble(`Perfect, ${state.data.firstName} — running your file now. One second while I check live approval odds…`, 'bot');
+        addBubble(`Perfect, ${firstNameOf(state.data)} — running your file now. One second while I check live approval odds…`, 'bot');
         setTimeout(()=>{
           const row = document.createElement('div');
           row.className = 'chip-row';
@@ -250,12 +249,18 @@ const EasyAutoChat = (function(){
     function submitLead(){
       inputArea.innerHTML = '<div style="text-align:center; color:var(--slate-dim); font-family:var(--mono); font-size:12.5px; padding:6px 0;">Scanning the lender network…</div>';
 
+      /* ------------------------------------------------------------------
+         LEAD PAYLOAD — send this to your real backend.
+         Wire this into your CRM / webhook / lender intake here.
+         Currently this only logs to the console as a placeholder.
+         ------------------------------------------------------------------ */
       const leadPayload = {
         ...state.data,
         source: window.location.pathname,
         submittedAt: new Date().toISOString()
       };
       console.log('Easy Auto lead captured (wire this to your CRM):', leadPayload);
+      // Example of where a real submission would go:
       // fetch('https://your-endpoint.example/api/leads', {
       //   method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(leadPayload)
       // });
@@ -269,6 +274,7 @@ const EasyAutoChat = (function(){
       if(progressBar) progressBar.style.width = '100%';
       if(countdownEl) countdownEl.textContent = 'Done!';
 
+      const fname = firstNameOf(state.data);
       const wrap = document.createElement('div');
       wrap.className = 'success-screen';
       wrap.innerHTML = `
@@ -281,7 +287,7 @@ const EasyAutoChat = (function(){
           <line id="succ-needle" x1="150" y1="150" x2="150" y2="45" stroke="#123B8F" stroke-width="4" stroke-linecap="round" style="transform-origin:150px 150px; transform:rotate(-90deg);"/>
           <circle cx="150" cy="150" r="8" fill="#123B8F"/>
         </svg>
-        <h3>You're pre-matched, ${state.data.firstName}. 🎉</h3>
+        <h3>You're pre-matched, ${fname}. 🎉</h3>
         <p>We found lenders likely to approve your profile. A real Easy Auto finance manager will call or text ${state.data.phone || 'you'} shortly to walk through your options.</p>
         <div class="success-stat-row">
           <div class="success-stat"><div class="v">86%</div><div class="l">Approval odds</div></div>

@@ -425,6 +425,15 @@
 <script src="assets/gallery-data.js"></script>
 <script src="assets/lenders-data.js"></script>
 <script src="assets/app.js"></script>
+<!-- OPTIONAL: real address autocomplete on the apply form.
+     1. Get an API key from Google Cloud Console (enable the "Places API").
+     2. Note: Google requires billing to be enabled on the project, though
+        typical usage on a form like this stays within the free monthly credit.
+     3. Uncomment the line below and replace YOUR_API_KEY.
+     Without this, the address field still works perfectly as manual entry —
+     nothing breaks either way.
+<script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places"></script>
+-->
 <script src="assets/chat.js"></script>
 <script>
   const overlay = document.getElementById('modal-overlay');

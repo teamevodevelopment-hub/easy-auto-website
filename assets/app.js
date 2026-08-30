@@ -198,6 +198,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   const rowA = LENDER_DATA.slice(0, half);
   const rowB = LENDER_DATA.slice(half);
 
+  // each row's track is duplicated back-to-back so a 50% translateX loop is seamless
   const rowAHTML = rowA.map(tileHTML).join('');
   const rowBHTML = rowB.map(tileHTML).join('');
 
