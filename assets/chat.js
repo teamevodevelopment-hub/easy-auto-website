@@ -6,10 +6,22 @@
 const EasyAutoChat = (function(){
 
   const SECONDS_PER_STEP = 4;
+  const NO_COMPANY = ['Retired','Other benefits income'];
 
   function firstNameOf(d){
     if(!d.name) return 'there';
     return d.name.trim().split(/\s+/)[0];
+  }
+
+  function companyNoun(d){
+    return d.employment === 'Self Employed' ? 'business' : 'company';
+  }
+
+  function tenureBotLine(d){
+    if(d.employment === 'Self Employed') return "And how long have you been running your business?";
+    if(d.employment === 'Retired') return "And how long have you been retired?";
+    if(d.employment === 'Other benefits income') return "And how long have you been receiving this income?";
+    return "And how long have you been there?";
   }
 
   const steps = [
@@ -37,25 +49,8 @@ const EasyAutoChat = (function(){
       validate:v=>v.trim().length>4 ? null : 'Just need your street address and city.'
     },
     {
-      key:'employer',
-      bot: ["Who's your employer? (Business name is fine if you're self-employed.)"],
-      type:'text', placeholder:'Employer or business name',
-      validate:v=>v.trim().length>0 ? null:'Just the name is fine, no need for details.'
-    },
-    {
-      key:'income',
-      bot: ["Roughly what's your gross monthly income? (An estimate is fine.)"],
-      type:'text', inputType:'text', placeholder:'e.g. 3200',
-      validate:v=> /^\$?\d[\d,]*$/.test(v.trim()) ? null : "Just a number works — e.g. 3200."
-    },
-    {
-      key:'timeAtJob',
-      bot: ["And how long have you been there?"],
-      type:'chips', options:['Less than 6 months','6 months – 1 year','1 – 3 years','3+ years']
-    },
-    {
       key:'birthdate',
-      bot: ["Last one — what's your date of birth?"],
+      bot: ["What's your date of birth?"],
       type:'text', placeholder:'MM/DD/YYYY',
       validate: v => {
         const m = v.trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
@@ -65,6 +60,36 @@ const EasyAutoChat = (function(){
         if(isNaN(dob.getTime()) || dob.getMonth() !== mm-1) return "That date doesn't look right.";
         return null;
       }
+    },
+    {
+      key:'employment',
+      bot: ["Quick one on income — how are you currently earning?"],
+      type:'chips', options:['Full Time','Part Time','Self Employed','Retired','Other benefits income']
+    },
+    {
+      key:'companyName',
+      skipIf: d => NO_COMPANY.includes(d.employment),
+      bot: d => [`What's the name of your ${companyNoun(d)}?`],
+      type:'text', placeholder:'Company or business name',
+      validate:v=>v.trim().length>0 ? null:'Just the name is fine, no need for details.'
+    },
+    {
+      key:'position',
+      skipIf: d => NO_COMPANY.includes(d.employment),
+      bot: d => [d.employment === 'Self Employed' ? "And what's your role in the business?" : "And what's your position there?"],
+      type:'text', placeholder:'Job title / role',
+      validate:v=>v.trim().length>0 ? null:'Just a short title is fine.'
+    },
+    {
+      key:'income',
+      bot: ["Roughly what's your gross monthly income? (An estimate is fine.)"],
+      type:'text', inputType:'text', placeholder:'e.g. 3200',
+      validate:v=> /^\$?\d[\d,]*$/.test(v.trim()) ? null : "Just a number works — e.g. 3200."
+    },
+    {
+      key:'timeAtJob',
+      bot: d => [tenureBotLine(d)],
+      type:'chips', options:['Less than 6 months','6 months – 1 year','1 – 3 years','3+ years']
     },
   ];
 
@@ -82,8 +107,12 @@ const EasyAutoChat = (function(){
     return visibleSteps(0, data).length;
   }
 
+  function makeSessionId(){
+    return 'lead_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
+  }
+
   function mount({ chatBody, inputArea, progressBar, countdownEl, onComplete }){
-    const state = { stepIndex:0, data:{}, answeredCount:0 };
+    const state = { stepIndex:0, data:{}, answeredCount:0, sessionId: makeSessionId() };
 
     function scrollToBottom(){ chatBody.scrollTop = chatBody.scrollHeight; }
 
@@ -127,6 +156,37 @@ const EasyAutoChat = (function(){
       }
     }
 
+    /* ------------------------------------------------------------------
+       AUTOSAVE — fires after every single answer, not just at final
+       submission, so a lead isn't lost even if someone abandons the
+       form partway through (e.g. only gives name + phone, then closes
+       the tab). Currently this logs to console and saves a local copy
+       in the browser as a safety net. To actually receive these partial
+       leads on your end (not just have them sit in the visitor's own
+       browser), wire the fetch() call below into a real endpoint —
+       same as the TODO on the final submitLead() function.
+       ------------------------------------------------------------------ */
+    function autosaveProgress(){
+      const total = totalVisibleCount(state.data);
+      const percentComplete = Math.min(100, Math.round((state.answeredCount / total) * 100));
+      const payload = {
+        sessionId: state.sessionId,
+        status: 'partial',
+        percentComplete,
+        data: { ...state.data },
+        source: window.location.pathname,
+        updatedAt: new Date().toISOString()
+      };
+      console.log(`Easy Auto PARTIAL lead autosave (${percentComplete}% complete) — wire this to your CRM:`, payload);
+      try{
+        localStorage.setItem('easyauto_partial_' + state.sessionId, JSON.stringify(payload));
+      }catch(e){ /* localStorage unavailable — safe to ignore, console.log above still ran */ }
+      // Example of where a real autosave submission would go:
+      // fetch('https://your-endpoint.example/api/leads/partial', {
+      //   method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)
+      // });
+    }
+
     function currentStep(){
       while(state.stepIndex < steps.length && steps[state.stepIndex].skipIf && steps[state.stepIndex].skipIf(state.data)){
         state.stepIndex++;
@@ -158,13 +218,10 @@ const EasyAutoChat = (function(){
       state.data[step.key] = value;
       state.answeredCount++;
       state.stepIndex++;
+      autosaveProgress();
       renderStep();
     }
 
-    /* ---- optional Google Places Autocomplete, activates automatically
-       if a Maps+Places script with an API key has been loaded on the
-       page. If not present, the field just behaves as plain manual
-       text entry — nothing breaks either way. ---- */
     function attachAddressAutocomplete(input){
       if(typeof google === 'undefined' || !google.maps || !google.maps.places) return;
       try{
@@ -268,11 +325,15 @@ const EasyAutoChat = (function(){
          Currently this only logs to the console as a placeholder.
          ------------------------------------------------------------------ */
       const leadPayload = {
-        ...state.data,
+        sessionId: state.sessionId,
+        status: 'complete',
+        percentComplete: 100,
+        data: { ...state.data },
         source: window.location.pathname,
         submittedAt: new Date().toISOString()
       };
-      console.log('Easy Auto lead captured (wire this to your CRM):', leadPayload);
+      console.log('Easy Auto COMPLETE lead captured (wire this to your CRM):', leadPayload);
+      try{ localStorage.removeItem('easyauto_partial_' + state.sessionId); }catch(e){}
       // Example of where a real submission would go:
       // fetch('https://your-endpoint.example/api/leads', {
       //   method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(leadPayload)
