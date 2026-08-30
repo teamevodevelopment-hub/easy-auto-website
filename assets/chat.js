@@ -5,7 +5,7 @@
    ========================================================= */
 const EasyAutoChat = (function(){
 
-  const SECONDS_PER_STEP = 7;
+  const SECONDS_PER_STEP = 4;
 
   function firstNameOf(d){
     if(!d.name) return 'there';
@@ -52,6 +52,19 @@ const EasyAutoChat = (function(){
       key:'timeAtJob',
       bot: ["And how long have you been there?"],
       type:'chips', options:['Less than 6 months','6 months – 1 year','1 – 3 years','3+ years']
+    },
+    {
+      key:'birthdate',
+      bot: ["Last one — what's your date of birth?"],
+      type:'text', placeholder:'MM/DD/YYYY',
+      validate: v => {
+        const m = v.trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+        if(!m) return "Use MM/DD/YYYY — e.g. 05/15/1990.";
+        const mm = parseInt(m[1],10), dd = parseInt(m[2],10), yyyy = parseInt(m[3],10);
+        const dob = new Date(yyyy, mm-1, dd);
+        if(isNaN(dob.getTime()) || dob.getMonth() !== mm-1) return "That date doesn't look right.";
+        return null;
+      }
     },
   ];
 
