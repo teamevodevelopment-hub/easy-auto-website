@@ -14,7 +14,7 @@ const EasyAutoChat = (function(){
      See the field mapping reference doc for what each key means and
      how to map it inside your GHL workflow.
      ------------------------------------------------------------------ */
-  const LEAD_WEBHOOK_URL = 'https://services.leadconnectorhq.com/hooks/9VGMfYkcETBlryI0dWob/webhook-trigger/1a300573-2eae-479e-975f-5b1f6597f0ec';
+  const LEAD_WEBHOOK_URL = 'https://services.leadconnectorhq.com/hooks/9VGMfYkcETBlryI0dWob/webhook-trigger/34dcf050-4c7b-44d5-9789-e610688dcca7';
 
   function splitName(full){
     const parts = (full || '').trim().split(/\s+/);
