@@ -303,8 +303,8 @@ const EasyAutoChat = (function(){
         <h3>You're pre-matched, ${fname}. 🎉</h3>
         <p>We found lenders likely to approve your profile. A real Easy Auto finance manager will call or text ${state.data.phone || 'you'} shortly to walk through your options.</p>
         <div class="success-stat-row">
-          <div class="success-stat"><div class="v">86%</div><div class="l">Approval odds</div></div>
-          <div class="success-stat"><div class="v">3</div><div class="l">Lenders matched</div></div>
+          <div class="success-stat"><div class="v">98%</div><div class="l">Approval odds</div></div>
+          <div class="success-stat"><div class="v">12</div><div class="l">Lenders matched</div></div>
           <div class="success-stat"><div class="v">~15 min</div><div class="l">Callback window</div></div>
         </div>
         <button class="btn btn-primary" style="width:100%; justify-content:center;" id="success-done-btn">Done</button>
@@ -315,7 +315,7 @@ const EasyAutoChat = (function(){
       setTimeout(()=>{
         const arc = document.getElementById('succ-arc');
         const needle = document.getElementById('succ-needle');
-        if(arc && needle) drawGauge(arc, needle, null, 86, 1800);
+        if(arc && needle) drawGauge(arc, needle, null, 98, 1800);
       }, 200);
     }
 
