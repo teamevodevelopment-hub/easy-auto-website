@@ -74,21 +74,33 @@ function drawGauge(arcEl, needleEl, numEl, target, duration){
 
 /* ---- reel video cards: click to play/pause ---- */
 document.addEventListener('DOMContentLoaded', ()=>{
+  const PLAY_ICON = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M8 5v14l11-7L8 5Z" fill="#fff"/></svg>';
+  const PAUSE_ICON = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="6" y="5" width="4" height="14" rx="1" fill="#fff"/><rect x="14" y="5" width="4" height="14" rx="1" fill="#fff"/></svg>';
+  const allReelVideos = [];
+
   document.querySelectorAll('.reel-card').forEach(card=>{
     const video = card.querySelector('.reel-video');
     const btn = card.querySelector('.reel-play');
     if(!video || !btn) return;
-    btn.addEventListener('click', ()=>{
+    allReelVideos.push(video);
+
+    function toggle(){
       if(video.paused){
+        // pause every other reel first so only one plays at a time
+        allReelVideos.forEach(v=>{ if(v !== video) v.pause(); });
         video.muted = false;
         video.play().catch(()=>{ video.muted = true; video.play(); });
-        btn.style.display = 'none';
       } else {
         video.pause();
       }
-    });
-    video.addEventListener('pause', ()=>{ btn.style.display = 'flex'; });
-    video.addEventListener('ended', ()=>{ btn.style.display = 'flex'; });
+    }
+
+    btn.addEventListener('click', (e)=>{ e.stopPropagation(); toggle(); });
+    card.addEventListener('click', toggle);
+
+    video.addEventListener('play', ()=>{ btn.innerHTML = PAUSE_ICON; card.classList.add('is-playing'); });
+    video.addEventListener('pause', ()=>{ btn.innerHTML = PLAY_ICON; card.classList.remove('is-playing'); });
+    video.addEventListener('ended', ()=>{ btn.innerHTML = PLAY_ICON; card.classList.remove('is-playing'); });
   });
 });
 
@@ -109,40 +121,41 @@ document.addEventListener('DOMContentLoaded', ()=>{
   }
 });
 
-/* ---- AI console type-on ---- */
-const consoleLines = [
-  { tag:'[scan]', text:'Reading applicant profile…' },
-  { tag:'[bureau]', text:'Cross-checking credit factors (no hard pull)' },
-  { tag:'[match]', text:'Querying lender network — 40+ lenders' },
-  { tag:'[filter]', text:'Removing lenders with incompatible risk bands' },
-  { tag:'[rank]', text:'Ranking by approval likelihood + rate' },
-  { tag:'[ok]', text:'3 lenders return pre-qualified match', ok:true },
-  { tag:'[plan]', text:'Generating 12-month credit-building path' },
-  { tag:'[done]', text:'Ready to hand off to your finance manager', ok:true },
+/* ---- AI verification checklist ---- */
+const verifySteps = [
+  'Reading applicant profile',
+  'Cross-checking credit factors (no hard pull)',
+  'Querying lender network — 40+ lenders',
+  'Ranking by approval likelihood and rate',
+  'Match found — 3 lenders pre-qualified',
+  'Generating 12-month credit-building path',
 ];
 document.addEventListener('DOMContentLoaded', ()=>{
-  const consoleSection = document.getElementById('ai-section');
-  if(!consoleSection) return;
-  function runConsole(){
-    const body = document.getElementById('console-body');
-    body.innerHTML = '';
-    consoleLines.forEach((l, i)=>{
-      const div = document.createElement('div');
-      div.className = 'console-line';
-      div.style.animationDelay = (i*0.45)+'s';
-      div.innerHTML = `<span class="tag">${l.tag}</span><span class="${l.ok?'ok':''}">${l.text}</span>`;
-      body.appendChild(div);
+  const aiSection = document.getElementById('ai-section');
+  if(!aiSection) return;
+  function runVerify(){
+    const container = document.getElementById('verify-rows');
+    if(!container) return;
+    container.innerHTML = '';
+    verifySteps.forEach((text, i)=>{
+      const row = document.createElement('div');
+      row.className = 'verify-row';
+      row.innerHTML = `<span class="verify-check"></span><span class="verify-row-label">${text}</span>`;
+      container.appendChild(row);
+      setTimeout(()=>{
+        row.classList.add('show');
+        setTimeout(()=>{
+          row.classList.add('done');
+          row.querySelector('.verify-check').classList.add('done');
+          row.querySelector('.verify-check').innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        }, 350);
+      }, i*450);
     });
-    const cursor = document.createElement('div');
-    cursor.innerHTML = '<span class="console-cursor"></span>';
-    cursor.style.opacity = '0';
-    cursor.style.animation = `typeIn .5s forwards ${consoleLines.length*0.45}s`;
-    body.appendChild(cursor);
   }
   const obs = new IntersectionObserver((entries)=>{
-    entries.forEach(e=>{ if(e.isIntersecting){ runConsole(); obs.disconnect(); } });
+    entries.forEach(e=>{ if(e.isIntersecting){ runVerify(); obs.disconnect(); } });
   }, { threshold:0.3 });
-  obs.observe(consoleSection);
+  obs.observe(aiSection);
 });
 
 /* ---- credit chart draw ---- */
