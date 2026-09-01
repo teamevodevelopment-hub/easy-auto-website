@@ -51,6 +51,7 @@
       <a href="index.html#ai-section">Our AI</a>
       <a href="gallery.html">Happy Drivers</a>
       <a href="blog.html">Blog</a>
+      <a href="index.html#reviews">Reviews</a>
       <a href="contact.html">Contact</a>
     </div>
     <div class="nav-cta">
@@ -87,7 +88,7 @@
              3. Replace the action="" value below with that URL
              That's it — no other code changes needed, submissions will start
              emailing straight to tushar.gupta@myloan.ca. -->
-        <form id="contact-form" action="https://formspree.io/f/xoeqeegq" method="POST">
+        <form id="contact-form" action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
           <input type="hidden" name="_subject" value="New message from Easy Auto contact page">
 
           <label class="form-label" for="cf-name">Full name</label>
@@ -183,7 +184,7 @@
         <iframe
           width="100%" height="380" style="border:0" loading="lazy" allowfullscreen
           referrerpolicy="no-referrer-when-downgrade"
-          src="https://www.google.com/maps/embed/v1/place?key=AIzaSyBHCEjUvGG0tr-0bw-PPY7Nx5-Z9_Qmt10&q=1330+Carling+Avenue,+Ottawa,+ON+K1Z+0C9">
+          src="https://www.google.com/maps/embed/v1/place?key=YOUR_API_KEY&q=1330+Carling+Avenue,+Ottawa,+ON+K1Z+0C9">
         </iframe>
       </div>
     </div>
@@ -229,7 +230,7 @@
   document.getElementById('contact-form').addEventListener('submit', function(e){
     const note = document.getElementById('contact-form-note');
     const action = this.getAttribute('action');
-    if(action.includes('https://formspree.io/f/xoeqeegq')){
+    if(action.includes('YOUR_FORM_ID')){
       e.preventDefault();
       note.textContent = "This form isn't connected yet — see the setup note in the page source (or ask Claude) to finish wiring it to an email address.";
       note.classList.add('show','error');
