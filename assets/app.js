@@ -72,6 +72,26 @@ function drawGauge(arcEl, needleEl, numEl, target, duration){
   }
 }
 
+/* ---- reel video cards: click to play/pause ---- */
+document.addEventListener('DOMContentLoaded', ()=>{
+  document.querySelectorAll('.reel-card').forEach(card=>{
+    const video = card.querySelector('.reel-video');
+    const btn = card.querySelector('.reel-play');
+    if(!video || !btn) return;
+    btn.addEventListener('click', ()=>{
+      if(video.paused){
+        video.muted = false;
+        video.play().catch(()=>{ video.muted = true; video.play(); });
+        btn.style.display = 'none';
+      } else {
+        video.pause();
+      }
+    });
+    video.addEventListener('pause', ()=>{ btn.style.display = 'flex'; });
+    video.addEventListener('ended', ()=>{ btn.style.display = 'flex'; });
+  });
+});
+
 /* ---- hero gauge trigger ---- */
 window.addEventListener('load', ()=>{
   const arc = document.getElementById('gauge-arc');
