@@ -19,6 +19,34 @@
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/styles.css">
 <link rel="icon" href="assets/logo.png" type="image/png">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Is this calculator's estimate the rate I'll actually be approved for?",
+      "acceptedAnswer": { "@type": "Answer", "text": "No — this tool estimates payments based on a rate you enter, so you can plan with real numbers. Your actual approved rate depends on your credit profile, income, and the specific lender, and only comes from a real application." }
+    },
+    {
+      "@type": "Question",
+      "name": "Why doesn't this calculator include sales tax automatically?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Sales tax varies by province, so we didn't want to guess wrong. Enter the total price including any tax you expect to pay for the most accurate estimate." }
+    },
+    {
+      "@type": "Question",
+      "name": "Should I use a longer term to get a lower payment?",
+      "acceptedAnswer": { "@type": "Answer", "text": "It depends on your priorities. A longer term lowers the monthly payment but increases total interest paid over the life of the loan." }
+    },
+    {
+      "@type": "Question",
+      "name": "What if I have negative equity on my trade-in?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Enter your trade-in's value and what you still owe on it separately — if you owe more than it's worth, that difference gets added to your new loan amount automatically." }
+    }
+  ]
+}
+</script>
 </head>
 <body>
 <a href="#main-content" class="skip-link">Skip to main content</a>
@@ -123,6 +151,95 @@
           <button class="btn btn-primary" style="width:100%; justify-content:center; margin-top:6px;" onclick="window.location.href='apply.html'">Get My Real Approval →</button>
         </div>
       </div>
+    </div>
+  </section>
+
+  <!-- ================= WHAT THE NUMBERS MEAN ================= -->
+  <section class="section-alt">
+    <div class="wrap">
+      <div class="section-head center reveal">
+        <div class="kicker">Reading Your Results</div>
+        <h2>What these numbers actually mean.</h2>
+      </div>
+      <div class="steps">
+        <div class="step-card reveal">
+          <div class="step-num">01</div>
+          <h3>Loan amount</h3>
+          <p>This is what you're actually borrowing — the vehicle price minus your down payment and any trade-in equity. It's the number interest gets charged on.</p>
+        </div>
+        <div class="step-card reveal">
+          <div class="step-connector"></div>
+          <div class="step-num">02</div>
+          <h3>Term length</h3>
+          <p>Longer terms lower your monthly payment but usually mean more total interest paid over the life of the loan — there's a real tradeoff either way.</p>
+        </div>
+        <div class="step-card reveal">
+          <div class="step-connector"></div>
+          <div class="step-num">03</div>
+          <h3>Total interest paid</h3>
+          <p>This is the true cost of financing on top of the vehicle price. A better rate or shorter term both bring this number down.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= QUICK REFERENCE ================= -->
+  <section>
+    <div class="wrap">
+      <div class="section-head reveal">
+        <div class="kicker">Quick Reference</div>
+        <h2>Sample payments at 9.99%, 60 months.</h2>
+        <p>A rough starting point before you plug in your own numbers above.</p>
+      </div>
+      <div class="article-table-wrap reveal" style="max-width:720px;">
+        <table class="article-table">
+          <thead><tr><th>Vehicle Price</th><th>$0 Down</th><th>$2,000 Down</th><th>Monthly Payment</th></tr></thead>
+          <tbody>
+            <tr><td>$15,000</td><td>$15,000 financed</td><td>$13,000 financed</td><td>~$276 / mo</td></tr>
+            <tr><td>$20,000</td><td>$20,000 financed</td><td>$18,000 financed</td><td>~$382 / mo</td></tr>
+            <tr><td>$25,000</td><td>$25,000 financed</td><td>$23,000 financed</td><td>~$489 / mo</td></tr>
+            <tr><td>$30,000</td><td>$30,000 financed</td><td>$28,000 financed</td><td>~$595 / mo</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="sample-note" style="text-align:left; margin-top:14px;">Monthly payment column assumes the $2,000-down scenario. These are rough estimates for reference only — use the calculator above with your own numbers for anything closer to accurate.</p>
+    </div>
+  </section>
+
+  <!-- ================= FAQ ================= -->
+  <section class="section-alt">
+    <div class="wrap">
+      <div class="section-head center reveal">
+        <div class="kicker">Calculator — Answered</div>
+        <h2>Questions people ask about these numbers.</h2>
+      </div>
+      <div class="faq-list reveal">
+        <details class="faq-item">
+          <summary>Is this calculator's estimate the rate I'll actually be approved for?</summary>
+          <p>No — this tool estimates payments based on a rate you enter, so you can plan with real numbers. Your actual approved rate depends on your credit profile, income, and the specific lender, and only comes from a real application.</p>
+        </details>
+        <details class="faq-item">
+          <summary>Why doesn't this calculator include sales tax automatically?</summary>
+          <p>Sales tax varies by province (GST-only in some, HST or GST+PST in others), so we didn't want to guess wrong. Enter the total price including any tax you expect to pay for the most accurate estimate.</p>
+        </details>
+        <details class="faq-item">
+          <summary>Should I use a longer term to get a lower payment?</summary>
+          <p>It depends on your priorities. A longer term lowers the monthly payment but increases total interest paid — try both a 60-month and 72-month term in the calculator above to see the real difference for your numbers.</p>
+        </details>
+        <details class="faq-item">
+          <summary>What if I have negative equity on my trade-in?</summary>
+          <p>Enter your trade-in's value and what you still owe on it separately — if you owe more than it's worth, that difference gets added to your new loan amount, which the calculator accounts for automatically.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= FINAL CTA ================= -->
+  <section>
+    <div class="final-cta reveal">
+      <h2>Ready to see your real numbers?</h2>
+      <p>A calculator gives you a plan. A real application gives you an actual answer — no hard credit pull to start.</p>
+      <button class="btn btn-primary btn-lg" onclick="window.location.href='apply.html'">Start My Approval →</button>
     </div>
   </section>
 
