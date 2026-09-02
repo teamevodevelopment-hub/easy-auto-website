@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Car Loan Calculator | Easy Auto</title>
+<meta name="description" content="Estimate your monthly car payment, or work backwards from a budget to see what vehicle price you can afford — free calculator, no signup required.">
+<link rel="canonical" href="https://www.easyautocars.com/calculator.html">
+<meta name="theme-color" content="#2F6FE4">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Car Loan Calculator | Easy Auto">
+<meta property="og:description" content="Estimate your monthly payment or what vehicle price fits your budget.">
+<meta property="og:url" content="https://www.easyautocars.com/calculator.html">
+<meta property="og:image" content="https://www.easyautocars.com/assets/og-image.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://www.easyautocars.com/assets/og-image.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/styles.css">
+<link rel="icon" href="assets/logo.png" type="image/png">
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<div class="glow-field"></div>
+
+<header>
+  <nav>
+    <a href="index.html" class="logo">
+      <img src="assets/logo.png" alt="Easy Auto — Automotive Finance Managers" class="site-logo">
+    </a>
+    <div class="nav-links">
+      <a href="index.html#how">How It Works</a>
+      <a href="rates.html">Rates</a>
+      <a href="calculator.html">Calculator</a>
+      <a href="gallery.html">Happy Drivers</a>
+      <a href="blog.html">Blog</a>
+      <a href="contact.html">Contact</a>
+    </div>
+    <div class="nav-cta">
+      <button class="btn btn-primary" onclick="window.location.href='apply.html'">Apply Now →</button>
+      <button class="hamburger" id="hamburger" aria-label="Open menu"><span></span></button>
+    </div>
+  </nav>
+</header>
+
+<main id="main-content">
+
+  <section class="hero" style="padding-bottom:16px;">
+    <div class="wrap" style="text-align:center;">
+      <div class="eyebrow reveal in" style="margin:0 auto 22px;"><span class="dot"></span> Free — No Signup</div>
+      <h1 style="max-width:680px; margin:0 auto 16px;">Car loan calculator.</h1>
+      <p class="lead" style="max-width:560px; margin:0 auto;">Estimate a monthly payment, or work backwards from a budget to see what price fits. These are estimates to plan with — your real approved rate comes from an actual application.</p>
+    </div>
+  </section>
+
+  <!-- ================= CALCULATOR ================= -->
+  <section style="padding-top:20px;">
+    <div class="wrap">
+      <div class="calc-tabs reveal">
+        <button class="calc-tab active" id="tab-payment" onclick="setMode('payment')">Calculate My Payment</button>
+        <button class="calc-tab" id="tab-afford" onclick="setMode('afford')">What Can I Afford</button>
+      </div>
+
+      <div class="calc-grid reveal">
+        <div class="calc-form-card">
+
+          <!-- PAYMENT MODE FIELDS -->
+          <div id="fields-payment">
+            <label class="form-label" for="p-price">Price of vehicle</label>
+            <input class="form-input" type="number" id="p-price" placeholder="e.g. 25000" min="0">
+            <p class="hint">Enter the total price including any taxes/fees you know about — this calculator doesn't add tax automatically since it varies by province.</p>
+          </div>
+
+          <!-- AFFORD MODE FIELDS -->
+          <div id="fields-afford" style="display:none;">
+            <label class="form-label" for="a-payment">Desired monthly payment</label>
+            <input class="form-input" type="number" id="a-payment" placeholder="e.g. 500" min="0">
+          </div>
+
+          <label class="form-label">Interest rate (%)</label>
+          <input class="form-input" type="number" id="c-rate" value="9.99" step="0.01" min="0">
+
+          <div class="form-row-2">
+            <div>
+              <label class="form-label">Down payment</label>
+              <input class="form-input" type="number" id="c-down" placeholder="0" min="0">
+            </div>
+            <div>
+              <label class="form-label">Loan term</label>
+              <select class="form-input" id="c-term">
+                <option value="36">36 months</option>
+                <option value="48">48 months</option>
+                <option value="60" selected>60 months</option>
+                <option value="72">72 months</option>
+                <option value="84">84 months</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row-2">
+            <div>
+              <label class="form-label">Trade-in value</label>
+              <input class="form-input" type="number" id="c-trade" placeholder="0" min="0">
+            </div>
+            <div>
+              <label class="form-label">Balance owing on trade</label>
+              <input class="form-input" type="number" id="c-owing" placeholder="0" min="0">
+            </div>
+          </div>
+        </div>
+
+        <div class="calc-result-card">
+          <div class="calc-result-label" id="result-label-1">Total Loan Amount</div>
+          <div class="calc-result-value" id="result-1">$0</div>
+          <div class="calc-result-divider"></div>
+          <div class="calc-result-row"><span>Monthly payment</span><b id="result-monthly">$0</b></div>
+          <div class="calc-result-row"><span>Bi-weekly payment</span><b id="result-biweekly">$0</b></div>
+          <div class="calc-result-row"><span>Weekly payment</span><b id="result-weekly">$0</b></div>
+          <div class="calc-result-row"><span>Total interest paid</span><b id="result-interest">$0</b></div>
+          <div class="calc-result-row" id="result-afford-row" style="display:none;"><span>Estimated vehicle price you can afford</span><b id="result-afford-price" style="color:var(--green);">$0</b></div>
+          <p class="calc-disclaimer">Estimate only, not a loan offer or guarantee of approval. Your actual rate and terms depend on your application and the lender.</p>
+          <button class="btn btn-primary" style="width:100%; justify-content:center; margin-top:6px;" onclick="window.location.href='apply.html'">Get My Real Approval →</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <div class="logo"><img src="assets/logo.png" alt="Easy Auto logo" class="site-logo"></div>
+        <p>A team of automotive finance managers using AI and a full lender network to get more Canadians approved.</p>
+      </div>
+      <div class="foot-links">
+        <div class="foot-col">
+          <h5>Company</h5>
+          <a href="index.html#how">How It Works</a>
+          <a href="rates.html">Rates</a>
+          <a href="blog.html">Blog</a>
+          <a href="contact.html">Contact</a>
+        </div>
+        <div class="foot-col">
+          <h5>Get Approved</h5>
+          <a href="apply.html">Start Application</a>
+        </div>
+        <div class="foot-col">
+          <h5>Contact</h5>
+          <a href="tel:+10000000000">Call Us</a>
+          <a href="mailto:hello@easyauto.ca">hello@easyauto.ca</a>
+        </div>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 Easy Auto. All rights reserved.</span>
+      <span>Financing subject to lender approval.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/app.js"></script>
+<script>
+let mode = 'payment';
+
+function setMode(m){
+  mode = m;
+  document.getElementById('tab-payment').classList.toggle('active', m==='payment');
+  document.getElementById('tab-afford').classList.toggle('active', m==='afford');
+  document.getElementById('fields-payment').style.display = m==='payment' ? 'block' : 'none';
+  document.getElementById('fields-afford').style.display = m==='afford' ? 'block' : 'none';
+  document.getElementById('result-label-1').textContent = m==='payment' ? 'Total Loan Amount' : 'Estimated Loan Amount';
+  document.getElementById('result-afford-row').style.display = m==='afford' ? 'flex' : 'none';
+  calculate();
+}
+
+function fmt(n){
+  if(!isFinite(n) || n < 0) n = 0;
+  return '$' + Math.round(n).toLocaleString('en-CA');
+}
+
+function calculate(){
+  const rateInput = parseFloat(document.getElementById('c-rate').value) || 0;
+  const r = (rateInput / 100) / 12; // monthly rate
+  const n = parseInt(document.getElementById('c-term').value, 10) || 60;
+  const down = parseFloat(document.getElementById('c-down').value) || 0;
+  const tradeVal = parseFloat(document.getElementById('c-trade').value) || 0;
+  const owing = parseFloat(document.getElementById('c-owing').value) || 0;
+  const tradeEquity = tradeVal - owing; // can be negative
+
+  if(mode === 'payment'){
+    const price = parseFloat(document.getElementById('p-price').value) || 0;
+    const principal = Math.max(0, price - down - tradeEquity);
+    let monthly;
+    if(r === 0){
+      monthly = principal / n;
+    } else {
+      const factor = Math.pow(1+r, n);
+      monthly = principal * (r * factor) / (factor - 1);
+    }
+    const totalPaid = monthly * n;
+    const totalInterest = totalPaid - principal;
+
+    document.getElementById('result-1').textContent = fmt(principal);
+    document.getElementById('result-monthly').textContent = fmt(monthly);
+    document.getElementById('result-biweekly').textContent = fmt(monthly * 12 / 26);
+    document.getElementById('result-weekly').textContent = fmt(monthly * 12 / 52);
+    document.getElementById('result-interest').textContent = fmt(totalInterest);
+  } else {
+    const desired = parseFloat(document.getElementById('a-payment').value) || 0;
+    let principal;
+    if(r === 0){
+      principal = desired * n;
+    } else {
+      const factor = Math.pow(1+r, n);
+      principal = desired * (factor - 1) / (r * factor);
+    }
+    const affordPrice = principal + down + tradeEquity;
+    const totalPaid = desired * n;
+    const totalInterest = totalPaid - principal;
+
+    document.getElementById('result-1').textContent = fmt(principal);
+    document.getElementById('result-monthly').textContent = fmt(desired);
+    document.getElementById('result-biweekly').textContent = fmt(desired * 12 / 26);
+    document.getElementById('result-weekly').textContent = fmt(desired * 12 / 52);
+    document.getElementById('result-interest').textContent = fmt(totalInterest);
+    document.getElementById('result-afford-price').textContent = fmt(affordPrice);
+  }
+}
+
+['p-price','a-payment','c-rate','c-down','c-trade','c-owing'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', calculate);
+});
+document.getElementById('c-term').addEventListener('change', calculate);
+
+calculate();
+</script>
+</body>
+</html>
