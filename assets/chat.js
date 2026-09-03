@@ -8,6 +8,14 @@ const EasyAutoChat = (function(){
   const SECONDS_PER_STEP = 4;
   const NO_COMPANY = ['Retired','Other benefits income'];
 
+  const VEHICLE_ICONS = {
+    sedan: '<svg viewBox="0 0 60 30" width="30" height="15" fill="none"><path d="M5 22 L5 16 Q5 13 8 13 L16 13 L21 6 Q22.5 4 26 4 L38 4 Q41.5 4 43 6 L48 13 L52 13 Q55 13 55 16 L55 22" stroke="#123B8F" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/><line x1="5" y1="22" x2="55" y2="22" stroke="#123B8F" stroke-width="2.2" stroke-linecap="round"/><circle cx="15" cy="22" r="3.5" fill="#fff" stroke="#123B8F" stroke-width="2.2"/><circle cx="45" cy="22" r="3.5" fill="#fff" stroke="#123B8F" stroke-width="2.2"/></svg>',
+    suv: '<svg viewBox="0 0 60 30" width="30" height="15" fill="none"><path d="M5 22 L5 15 Q5 12 8 12 L14 12 L17 5 Q18 3 21 3 L39 3 Q42 3 43 5 L46 12 L52 12 Q55 12 55 15 L55 22" stroke="#123B8F" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/><line x1="5" y1="22" x2="55" y2="22" stroke="#123B8F" stroke-width="2.2" stroke-linecap="round"/><line x1="21" y1="3" x2="21" y2="12" stroke="#123B8F" stroke-width="1.6"/><line x1="39" y1="3" x2="39" y2="12" stroke="#123B8F" stroke-width="1.6"/><circle cx="15" cy="22" r="4" fill="#fff" stroke="#123B8F" stroke-width="2.2"/><circle cx="45" cy="22" r="4" fill="#fff" stroke="#123B8F" stroke-width="2.2"/></svg>',
+    truck: '<svg viewBox="0 0 60 30" width="30" height="15" fill="none"><path d="M5 22 L5 16 Q5 13 8 13 L11 13 L15 5 Q16 3 19 3 L26 3 Q28 3 28 6 L28 13 L34 13 L34 22" stroke="#123B8F" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/><path d="M34 13 L52 13 Q55 13 55 16 L55 22" stroke="#123B8F" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/><line x1="34" y1="13" x2="34" y2="22" stroke="#123B8F" stroke-width="1.6"/><line x1="5" y1="22" x2="55" y2="22" stroke="#123B8F" stroke-width="2.2" stroke-linecap="round"/><circle cx="14" cy="22" r="3.5" fill="#fff" stroke="#123B8F" stroke-width="2.2"/><circle cx="46" cy="22" r="3.5" fill="#fff" stroke="#123B8F" stroke-width="2.2"/></svg>',
+    minivan: '<svg viewBox="0 0 60 30" width="30" height="15" fill="none"><path d="M5 22 L5 10 Q5 4 11 4 L49 4 Q55 4 55 10 L55 22" stroke="#123B8F" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/><line x1="5" y1="22" x2="55" y2="22" stroke="#123B8F" stroke-width="2.2" stroke-linecap="round"/><line x1="18" y1="4" x2="18" y2="14" stroke="#123B8F" stroke-width="1.6"/><line x1="38" y1="4" x2="38" y2="14" stroke="#123B8F" stroke-width="1.6"/><line x1="5" y1="14" x2="55" y2="14" stroke="#123B8F" stroke-width="1.6"/><circle cx="16" cy="22" r="4" fill="#fff" stroke="#123B8F" stroke-width="2.2"/><circle cx="44" cy="22" r="4" fill="#fff" stroke="#123B8F" stroke-width="2.2"/></svg>',
+    question: '<svg viewBox="0 0 24 24" width="26" height="26" fill="none"><circle cx="12" cy="12" r="9" stroke="#123B8F" stroke-width="2"/><path d="M9 9c0-1.5 1.2-2.5 3-2.5s3 1 3 2.3c0 1.5-1.3 1.8-2 2.5-.5.5-.7 1-.7 1.7" stroke="#123B8F" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="17" r="0.9" fill="#123B8F"/></svg>'
+  };
+
   /* ------------------------------------------------------------------
      WEBHOOK — every completed application POSTs here automatically.
      This is a GoHighLevel / LeadConnector inbound webhook trigger.
@@ -69,7 +77,7 @@ const EasyAutoChat = (function(){
       "Monthly Income": data.income || '',
       "Additional Income": "",
       "Previous Employer": "",
-      "Estimated Credit Range": "",
+      "Estimated Credit Range": data.creditRating || "",
       "Monthly Debt Payments": "",
       "Proof Of Income": "",
       "Credit Notes": "",
@@ -128,7 +136,7 @@ const EasyAutoChat = (function(){
       "VOI Engine Size": "",
       "VOI Transmission Type": "",
       "VOI Drive Type": "",
-      "VOI Body Style": "",
+      "VOI Body Style": data.vehicleType || "",
       "Requested Test Drive Date": "",
       "Requested Test Drive Time Preference": "",
       "Assigned To": "",
@@ -171,8 +179,24 @@ const EasyAutoChat = (function(){
 
   const steps = [
     {
+      key:'vehicleType',
+      bot: ["Hi! I'm here to help get you approved 👋", "Let's find your approval odds — quick chat, no long forms. What are you hoping to drive?"],
+      type:'chips', options:[
+        {label:'Sedan', icon:'sedan'},
+        {label:'SUV', icon:'suv'},
+        {label:'Truck', icon:'truck'},
+        {label:'Minivan', icon:'minivan'},
+        {label:'Not sure yet', icon:'question'}
+      ]
+    },
+    {
+      key:'creditRating',
+      bot: ["No judgment here — what would you guess your credit is like right now?"],
+      type:'chips', options:['Great','Good','Fair','Poor',"I'm not sure"]
+    },
+    {
       key:'name',
-      bot: ["Hi! I'm here to help get you approved 👋", "Let's find your approval odds — quick chat, no long forms. What's your full name?"],
+      bot: ["Got it — what's your full name?"],
       type:'text', placeholder:'Your full name', validate:v=>v.trim().length>1 ? null:'Just need your name to get started.'
     },
     {
@@ -394,12 +418,18 @@ const EasyAutoChat = (function(){
         const row = document.createElement('div');
         row.className = 'chip-row';
         step.options.forEach(opt=>{
+          const isIconChip = typeof opt === 'object' && opt !== null;
+          const label = isIconChip ? opt.label : opt;
           const chip = document.createElement('button');
-          chip.className = 'chip';
-          chip.textContent = opt;
+          chip.className = isIconChip ? 'chip chip-icon' : 'chip';
+          if(isIconChip){
+            chip.innerHTML = (VEHICLE_ICONS[opt.icon] || '') + '<span>' + label + '</span>';
+          } else {
+            chip.textContent = label;
+          }
           chip.addEventListener('click', ()=>{
-            addBubble(opt, 'user');
-            advance(step, opt);
+            addBubble(label, 'user');
+            advance(step, label);
           });
           row.appendChild(chip);
         });
