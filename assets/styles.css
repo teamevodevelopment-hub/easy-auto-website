@@ -515,24 +515,31 @@ textarea.form-input{ resize:vertical; min-height:110px; }
 
 /* ---------- STEP-TAB APPLY FORM ---------- */
 .steps-page-wrap{ max-width:640px; margin:0 auto; padding:28px 20px 60px; }
-.step-tabs{ display:flex; gap:6px; margin-bottom:20px; }
-.step-tab{
-  flex:1; background:var(--sky); border:1px solid var(--sky-3); border-radius:12px;
-  padding:10px 6px 8px; cursor:pointer; text-align:center; transition:background .15s ease, border-color .15s ease;
+.apply-lender-strip{ text-align:center; margin:18px 0 8px; }
+.apply-lender-strip-label{ display:block; font-size:12px; color:var(--slate-dim); margin-bottom:8px; }
+.apply-lender-strip-names{ display:flex; justify-content:center; flex-wrap:wrap; gap:10px 18px; }
+.apply-lender-strip-names span{ font-family:var(--body); font-weight:700; font-size:14px; color:var(--ink); opacity:.75; }
+
+.step-tabs{
+  display:flex; gap:0; background:#fff; border:1px solid var(--line); border-bottom:1px solid var(--line);
+  border-radius:20px 20px 0 0; margin-bottom:0; box-shadow:0 24px 60px rgba(15,32,51,0.08);
 }
-.step-tab-label{ display:block; font-size:12.5px; font-weight:700; color:var(--slate); margin-bottom:6px; }
+.step-tab{
+  flex:1; background:none; border:none; border-bottom:3px solid transparent;
+  padding:16px 6px 13px; cursor:pointer; text-align:center; transition:border-color .15s ease;
+}
+.step-tab-label{ display:block; font-size:12.5px; font-weight:700; color:var(--slate-dim); margin-bottom:6px; letter-spacing:.02em; }
 .step-tab-num{
   display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px;
-  border-radius:50%; background:#fff; border:1px solid var(--sky-3); font-size:11px; font-weight:700; color:var(--slate-dim);
+  border-radius:50%; background:var(--sky); border:1px solid var(--sky-3); font-size:11px; font-weight:700; color:var(--slate-dim);
 }
-.step-tab.active{ background:var(--blue); border-color:var(--blue); }
-.step-tab.active .step-tab-label{ color:#fff; }
-.step-tab.active .step-tab-num{ background:#fff; color:var(--blue); border-color:#fff; }
-.step-tab.done{ background:var(--green-dim); border-color:var(--green); }
+.step-tab.active{ border-bottom-color:var(--blue); }
+.step-tab.active .step-tab-label{ color:var(--blue-deep); }
+.step-tab.active .step-tab-num{ background:var(--blue); color:#fff; border-color:var(--blue); }
 .step-tab.done .step-tab-label{ color:var(--green); }
 .step-tab.done .step-tab-num{ background:var(--green); color:#fff; border-color:var(--green); }
+.steps-card{ background:#fff; border:1px solid var(--line); border-top:none; border-radius:0 0 20px 20px; padding:32px; box-shadow:0 24px 60px rgba(15,32,51,0.08); }
 
-.steps-card{ background:#fff; border:1px solid var(--line); border-radius:20px; padding:32px; box-shadow:0 24px 60px rgba(15,32,51,0.08); }
 .step-panel{ display:none; }
 .step-panel.active{ display:block; }
 .step-panel-title{ font-family:var(--display); font-weight:700; font-size:20px; text-align:center; margin-bottom:22px; }
