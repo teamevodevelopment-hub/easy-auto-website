@@ -79,14 +79,13 @@
     </a>
     <div class="nav-links">
       <a href="index.html#how">How It Works</a>
-      <a href="rates.html">Rates</a>
-      <a href="calculator.html">Calculator</a>
+      <a href="index.html#ai-section">Our AI</a>
       <a href="gallery.html">Happy Drivers</a>
       <a href="blog.html">Blog</a>
-      <a href="contact.html">Contact</a>
+      <a href="index.html#reviews">Reviews</a>
     </div>
     <div class="nav-cta">
-      <button class="btn btn-primary" onclick="openChatModal()">Apply Now →</button>
+      <button class="btn btn-primary" onclick="window.location.href='apply.html'">Apply Now →</button>
       <button class="hamburger" id="hamburger" aria-label="Open menu"><span></span></button>
     </div>
   </nav>
@@ -101,7 +100,7 @@
         <h1>Declined at the<br><span class="strike">dealership.</span><br>Approved by <span class="accent">Easy Auto.</span></h1>
         <p class="lead">Our finance managers use our own AI approval system to scan our full lender network in real time and find the approval other dealers couldn't. Bad credit, no credit, previous repo — we've built a path for it, and a plan to bring you back to prime.</p>
         <div class="hero-actions">
-          <button class="btn btn-primary btn-lg" onclick="openChatModal()">Start My Approval →</button>
+          <button class="btn btn-primary btn-lg" onclick="window.location.href='apply.html'">Start My Approval →</button>
           <a href="apply.html" class="reassure" style="text-decoration:underline;">or open the full application page</a>
         </div>
       </div>
@@ -318,26 +317,6 @@
     </div>
   </section>
 
-  <!-- ================= PARTNERS ================= -->
-  <section id="partners">
-    <div class="wrap">
-      <div class="section-head center reveal">
-        <div class="kicker">Who Powers The Network</div>
-        <h2>Backed by the names that make approvals real.</h2>
-        <p>From credit bureau reporting to AI-matched lending and dealership partners across Canada — here's who we work alongside to get you approved and rebuilding.</p>
-      </div>
-      <div class="partners-grid reveal">
-        <div class="partner-tile"><img src="assets/partners/equifax.png" alt="Equifax" loading="lazy"></div>
-        <div class="partner-tile"><img src="assets/partners/transunion.png" alt="TransUnion" loading="lazy"></div>
-        <div class="partner-tile"><img src="assets/partners/autocorp.png" alt="Autocorp.ai" loading="lazy"></div>
-        <div class="partner-tile"><img src="assets/partners/trucktown.png" alt="TruckTown" loading="lazy"></div>
-        <div class="partner-tile"><img src="assets/partners/myloan.png" alt="myloan.ca" loading="lazy"></div>
-        <div class="partner-tile"><img src="assets/partners/mycar.png" alt="mycar" loading="lazy"></div>
-      </div>
-      <p class="partners-note">Payment history with our lending partners is reported to Equifax and TransUnion — helping build the credit file you're working to repair.</p>
-    </div>
-  </section>
-
   <!-- ================= GALLERY PREVIEW ================= -->
   <section>
     <div class="wrap">
@@ -415,7 +394,7 @@
     <div class="final-cta reveal">
       <h2>Your approval odds are one chat away.</h2>
       <p>Our AI doesn't need your full application to give you a real read. Start now — takes less time than the drive to the dealership.</p>
-      <button class="btn btn-primary btn-lg" onclick="openChatModal()">Start My Approval →</button>
+      <button class="btn btn-primary btn-lg" onclick="window.location.href='apply.html'">Start My Approval →</button>
     </div>
   </section>
 </main>
@@ -437,7 +416,7 @@
         </div>
         <div class="foot-col">
           <h5>Get Approved</h5>
-          <a href="javascript:void(0)" onclick="openChatModal()">Start Application</a>
+          <a href="apply.html">Start Application</a>
           <a href="apply.html">Full Application Page</a>
           <a href="index.html#credit">Credit Building</a>
         </div>
@@ -455,62 +434,8 @@
   </div>
 </footer>
 
-<!-- ================= CONVERSATIONAL APPLY MODAL ================= -->
-<div class="modal-overlay" id="modal-overlay">
-  <div class="chat-modal" role="dialog" aria-modal="true" aria-label="Apply now conversational form">
-    <div class="chat-head">
-      <div class="chat-avatar">E</div>
-      <div class="chat-head-text">
-        <div class="name">Easy Auto Assistant</div>
-        <div class="status"><span class="dot"></span>Online now</div>
-      </div>
-      <button class="chat-close" id="chat-close" aria-label="Close">✕</button>
-    </div>
-    <div class="chat-countdown" id="chat-countdown">About 90 seconds from finish</div>
-    <div class="chat-progress"><div class="chat-progress-bar" id="chat-progress-bar"></div></div>
-    <div class="chat-body" id="chat-body"></div>
-    <div class="chat-input-area" id="chat-input-area"></div>
-  </div>
-</div>
-
 <script src="assets/gallery-data.js"></script>
 <script src="assets/lenders-data.js"></script>
 <script src="assets/app.js"></script>
-<!-- OPTIONAL: real address autocomplete on the apply form.
-     1. Get an API key from Google Cloud Console (enable the "Places API").
-     2. Note: Google requires billing to be enabled on the project, though
-        typical usage on a form like this stays within the free monthly credit.
-     3. Uncomment the line below and replace YOUR_API_KEY.
-     Without this, the address field still works perfectly as manual entry —
-     nothing breaks either way.
-<script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places"></script>
--->
-<script src="assets/chat.js"></script>
-<script>
-  const overlay = document.getElementById('modal-overlay');
-  let chatInstance = null;
-
-  function openChatModal(){
-    overlay.classList.add('open');
-    document.body.style.overflow = 'hidden';
-    if(!chatInstance){
-      chatInstance = EasyAutoChat.mount({
-        chatBody: document.getElementById('chat-body'),
-        inputArea: document.getElementById('chat-input-area'),
-        progressBar: document.getElementById('chat-progress-bar'),
-        countdownEl: document.getElementById('chat-countdown'),
-        onComplete: closeChatModal
-      });
-      chatInstance.start();
-    }
-  }
-  function closeChatModal(){
-    overlay.classList.remove('open');
-    document.body.style.overflow = '';
-  }
-  document.getElementById('chat-close').addEventListener('click', closeChatModal);
-  overlay.addEventListener('click', (e)=>{ if(e.target === overlay) closeChatModal(); });
-  document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeChatModal(); });
-</script>
 </body>
 </html>
