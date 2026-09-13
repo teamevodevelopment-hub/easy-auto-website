@@ -236,7 +236,12 @@ function attachAddressAutocomplete(){
     });
   }catch(e){}
 }
-attachAddressAutocomplete();
+// Called by Google's script itself once it's fully loaded and ready —
+// see the callback=initGoogleMapsAutocomplete parameter on the script
+// tag in apply.html. This is more reliable than calling this function
+// immediately, since that risked running before Google's script had
+// actually finished initializing google.maps.places.
+window.initGoogleMapsAutocomplete = attachAddressAutocomplete;
 
 wireChipRow('rentown-chip-row', v=>{
   state.data.rentOrOwn = v;
