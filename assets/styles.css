@@ -437,7 +437,7 @@ footer{ padding:60px 0 40px; border-top:1px solid var(--line); margin-top:80px; 
 .pac-item-query{ color:var(--ink); font-size:13.5px; }
 .pac-matched{ color:var(--blue); }
 .success-screen{ padding:30px 24px; text-align:center; }
-.success-gauge{ width:220px; margin:0 auto 10px; }
+.success-gauge{ display:block; width:220px; margin:0 auto 10px; }
 .success-screen h3{ font-family:var(--display); font-size:22px; margin:14px 0 8px; color:var(--ink); }
 .success-screen p{ color:var(--slate); font-size:14.5px; margin-bottom:22px; }
 .success-stat-row{ display:flex; gap:10px; justify-content:center; margin-bottom:24px; }

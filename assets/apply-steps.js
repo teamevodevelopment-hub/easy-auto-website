@@ -303,6 +303,7 @@ function renderSuccess(){
   const fname = (state.data.name || '').trim().split(/\s+/)[0] || 'there';
   const mount = document.getElementById('success-mount');
   mount.innerHTML = `
+    <div class="success-screen">
     <svg class="success-gauge" viewBox="0 0 300 170">
       <path d="M 30 150 A 120 120 0 0 1 270 150" fill="none" stroke="#DEEEFF" stroke-width="20" stroke-linecap="round"/>
       <path id="succ-arc" d="M 30 150 A 120 120 0 0 1 270 150" fill="none" stroke="url(#succGrad)" stroke-width="20" stroke-linecap="round" stroke-dasharray="377" stroke-dashoffset="377"/>
@@ -320,6 +321,7 @@ function renderSuccess(){
       <div class="success-stat"><div class="v">~15 min</div><div class="l">Callback window</div></div>
     </div>
     <a href="index.html" class="btn btn-primary" style="width:100%; justify-content:center;">Done</a>
+    </div>
   `;
   setTimeout(()=>{
     const arc = document.getElementById('succ-arc');
