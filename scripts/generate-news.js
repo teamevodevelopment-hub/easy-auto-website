@@ -1,4 +1,3 @@
-console.log("VERSION CHECK: if you see this exact line, the file update worked");
 /* =========================================================
    EASY AUTO — Daily auto news generator
    ---------------------------------------------------------
@@ -23,7 +22,7 @@ if (!API_KEY) {
 }
 
 const OUTPUT_PATH = path.join(__dirname, '..', 'assets', 'news-data.js');
-const ITEM_COUNT = 4;
+const ITEM_COUNT = 10;
 
 const SYSTEM_PROMPT = `You find and summarize current automotive industry news for a Canadian car-financing company's website. Search for real, recent news (published within the last few days) covering topics like: new vehicle releases, auto industry trends, car loan/interest rate news in Canada, EV market news, and general car-buying advice trends. Avoid anything overly technical, niche motorsport content, or US-only content that doesn't apply to Canadian readers.
 
@@ -90,7 +89,7 @@ async function generateNews() {
     },
     body: JSON.stringify({
       model: 'claude-sonnet-5',
-      max_tokens: 10000,
+      max_tokens: 16000,
       system: SYSTEM_PROMPT,
       messages: [
         { role: 'user', content: 'Find today\'s automotive industry news relevant to Canadian car buyers and car financing.' }
