@@ -129,10 +129,13 @@
 
     grid.innerHTML = items.map(item => `
       <a class="news-card" href="${item.sourceUrl}" target="_blank" rel="noopener noreferrer">
-        <div class="news-card-date">${item.date || ''}</div>
+        <span class="news-card-date">${item.date || ''}</span>
         <h3 class="news-card-title">${item.title}</h3>
         <p class="news-card-summary">${item.summary}</p>
-        <div class="news-card-source">${item.source} ↗</div>
+        <div class="news-card-footer">
+          <span class="news-card-source">${item.source}</span>
+          <span class="news-card-arrow">↗</span>
+        </div>
       </a>
     `).join('');
   })();
