@@ -12,6 +12,11 @@ on:
 jobs:
   update-news:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      # ^ Without this, GitHub's default token only has read access to the
+      # repo, and the final "git push" step fails with a 403 permission
+      # error — this line is what fixes that.
     steps:
       - name: Check out the repository
         uses: actions/checkout@v4
