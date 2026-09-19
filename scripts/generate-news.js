@@ -1,3 +1,4 @@
+console.log("VERSION CHECK: if you see this exact line, the file update worked");
 /* =========================================================
    EASY AUTO — Daily auto news generator
    ---------------------------------------------------------
