@@ -3,7 +3,7 @@
     {
       "source": "/equifax",
       "destination": "https://consumer.autocorp.ai/w/07fa1abec9fa/credit?assignee=tushar.gupta%40myloan.ca",
-      "permanent": false
+      "permanent": true
     }
   ],
   "rewrites": [
