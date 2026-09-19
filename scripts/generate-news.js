@@ -22,32 +22,44 @@ if (!API_KEY) {
 }
 
 const OUTPUT_PATH = path.join(__dirname, '..', 'assets', 'news-data.js');
+const ITEM_COUNT = 4;
 
 const SYSTEM_PROMPT = `You find and summarize current automotive industry news for a Canadian car-financing company's website. Search for real, recent news (published within the last few days) covering topics like: new vehicle releases, auto industry trends, car loan/interest rate news in Canada, EV market news, and general car-buying advice trends. Avoid anything overly technical, niche motorsport content, or US-only content that doesn't apply to Canadian readers.
 
-Respond with ONLY a JSON array (no other text, no markdown code fences) of exactly 6 news items, newest/most relevant first, in this exact format:
+Respond with ONLY a JSON array (no other text before or after it, no markdown code fences) of exactly ${ITEM_COUNT} news items, newest/most relevant first, in this exact format:
 
 [
   {
     "title": "Short, clear headline (under 90 characters)",
-    "summary": "2-3 sentence plain-English summary in your own words, not copied from the source. No direct quotes longer than a few words.",
+    "summary": "One or two plain-English sentences in your own words, not copied from the source. No direct quotes.",
     "source": "Name of the original publication",
     "sourceUrl": "Direct URL to the original article",
     "date": "YYYY-MM-DD of original publication"
   }
 ]
 
-Only include items where you have a real, verifiable source URL from your search results. If you cannot find 6 genuinely relevant, recent items, return fewer rather than inventing any.`;
+Keep summaries brief — one or two sentences each, not three. Only include items where you have a real, verifiable source URL from your search results. If you cannot find ${ITEM_COUNT} genuinely relevant, recent items, return fewer rather than inventing any. Do your searching first, then write the final JSON array as the very last thing in your response.`;
 
+// A proper string-aware brace matcher: tracks whether we're currently
+// inside a quoted string (and respects escaped quotes like \") so that
+// any stray { or } characters that happen to appear inside a summary's
+// text don't throw off the matching. Used to salvage complete items out
+// of a response that got cut off before its closing bracket.
 function repairTruncatedJsonArray(text) {
-  // Finds every top-level {...} object in the text and parses each one
-  // individually, skipping the last one if it's incomplete. This lets us
-  // recover, say, 4 good items out of an intended 6 rather than nothing.
   const items = [];
   let depth = 0;
   let start = -1;
+  let inString = false;
+  let escapeNext = false;
+
   for (let i = 0; i < text.length; i++) {
     const ch = text[i];
+
+    if (escapeNext) { escapeNext = false; continue; }
+    if (ch === '\\') { escapeNext = true; continue; }
+    if (ch === '"') { inString = !inString; continue; }
+    if (inString) continue;
+
     if (ch === '{') {
       if (depth === 0) start = i;
       depth++;
@@ -58,7 +70,7 @@ function repairTruncatedJsonArray(text) {
         try {
           items.push(JSON.parse(candidate));
         } catch (e) {
-          // skip malformed fragment
+          // incomplete or malformed fragment, skip it
         }
         start = -1;
       }
@@ -93,29 +105,36 @@ async function generateNews() {
 
   const data = await response.json();
 
-  // The response may include text blocks, tool_use blocks, and tool_result
-  // blocks (from the web search). We only want the final text Claude wrote.
+  // This is the single most important diagnostic line in this whole
+  // script — Anthropic's API tells us directly why generation stopped.
+  // "end_turn" = Claude finished normally. "max_tokens" = it got cut off
+  // because the token ceiling was hit, confirming that specific cause
+  // rather than us having to guess from a JSON parse failure.
+  console.log(`API stop_reason: ${data.stop_reason}`);
+
   const textBlocks = data.content.filter(block => block.type === 'text').map(block => block.text);
   const fullText = textBlocks.join('\n').trim();
+  console.log(`Received ${textBlocks.length} text block(s), ${fullText.length} characters total.`);
 
-  // Strip markdown code fences if Claude added them despite instructions not to.
   const cleaned = fullText.replace(/^```json\s*/i, '').replace(/```\s*$/, '').trim();
 
   let newsItems;
+  let usedRepair = false;
   try {
     newsItems = JSON.parse(cleaned);
+    console.log('JSON parsed successfully on the first attempt.');
   } catch (err) {
-    // If the response got cut off before the JSON array closed properly
-    // (e.g. an unusually long run of search tool calls ate into the
-    // token budget), try to salvage whichever complete items came
-    // through rather than throwing away the whole run.
-    console.warn('Initial JSON parse failed, attempting to salvage complete items from a possibly truncated response...');
+    console.log(`Direct JSON.parse failed (${err.message}). Attempting to salvage complete items...`);
     const repaired = repairTruncatedJsonArray(cleaned);
-    if (repaired && repaired.length > 0) {
-      console.warn(`Salvaged ${repaired.length} complete item(s) from the truncated response.`);
+    console.log(`Repair function found ${repaired.length} complete item(s).`);
+    if (repaired.length > 0) {
       newsItems = repaired;
+      usedRepair = true;
     } else {
-      throw new Error(`Failed to parse JSON from Claude's response, and no complete items could be salvaged. Raw response:\n${fullText}`);
+      console.log('=== RAW RESPONSE TEXT (for debugging) ===');
+      console.log(fullText);
+      console.log('=== END RAW RESPONSE TEXT ===');
+      throw new Error('Could not parse or salvage any items from the response — see raw text above.');
     }
   }
 
@@ -123,6 +142,7 @@ async function generateNews() {
     throw new Error('Claude returned an empty or invalid news list.');
   }
 
+  console.log(`Proceeding with ${newsItems.length} item(s)${usedRepair ? ' (recovered via repair)' : ''}.`);
   return newsItems;
 }
 
