@@ -58,6 +58,9 @@
     <div class="wrap">
       <p id="news-updated" style="font-family:var(--mono); font-size:12px; color:var(--slate-dim); text-transform:uppercase; letter-spacing:.05em; margin-bottom:24px;"></p>
       <div id="news-grid" class="news-grid"></div>
+      <div style="text-align:center; margin-top:30px;">
+        <button class="btn btn-ghost" id="news-load-more" style="display:none;">Load More</button>
+      </div>
       <div id="news-empty" style="display:none; text-align:center; padding:60px 20px;">
         <p style="font-size:16px; color:var(--slate); margin-bottom:8px;">Today's news hasn't been fetched yet.</p>
         <p style="font-size:14px; color:var(--slate-dim);">This page updates automatically every day — check back soon.</p>
@@ -115,10 +118,15 @@
     const grid = document.getElementById('news-grid');
     const emptyState = document.getElementById('news-empty');
     const updatedLabel = document.getElementById('news-updated');
+    const loadMoreBtn = document.getElementById('news-load-more');
     const items = (typeof NEWS_DATA !== 'undefined' && NEWS_DATA.items) || [];
 
     if(items.length === 0){
       emptyState.style.display = 'block';
+      emptyState.innerHTML = `
+        <p style="font-size:16px; color:var(--slate); margin-bottom:8px;">Today's news hasn't been fetched yet.</p>
+        <p style="font-size:14px; color:var(--slate-dim);">This page updates automatically every day — check back soon.</p>
+      `;
       return;
     }
 
@@ -127,17 +135,32 @@
       updatedLabel.textContent = 'Last updated ' + d.toLocaleDateString('en-CA', { year:'numeric', month:'long', day:'numeric' });
     }
 
-    grid.innerHTML = items.map(item => `
-      <a class="news-card" href="${item.sourceUrl}" target="_blank" rel="noopener noreferrer">
-        <span class="news-card-date">${item.date || ''}</span>
-        <h3 class="news-card-title">${item.title}</h3>
-        <p class="news-card-summary">${item.summary}</p>
-        <div class="news-card-footer">
-          <span class="news-card-source">${item.source}</span>
-          <span class="news-card-arrow">↗</span>
-        </div>
-      </a>
-    `).join('');
+    const batchSize = 9;
+    let shown = 0;
+
+    function cardHTML(item){
+      return `
+        <a class="news-card" href="${item.sourceUrl}" target="_blank" rel="noopener noreferrer">
+          <span class="news-card-date">${item.date || ''}</span>
+          <h3 class="news-card-title">${item.title}</h3>
+          <p class="news-card-summary">${item.summary}</p>
+          <div class="news-card-footer">
+            <span class="news-card-source">${item.source}</span>
+            <span class="news-card-arrow">↗</span>
+          </div>
+        </a>
+      `;
+    }
+
+    function showNextBatch(){
+      const next = items.slice(shown, shown + batchSize);
+      grid.insertAdjacentHTML('beforeend', next.map(cardHTML).join(''));
+      shown += next.length;
+      loadMoreBtn.style.display = shown >= items.length ? 'none' : 'inline-flex';
+    }
+
+    showNextBatch();
+    loadMoreBtn.addEventListener('click', showNextBatch);
   })();
 </script>
 </body>

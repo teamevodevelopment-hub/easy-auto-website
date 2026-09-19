@@ -23,6 +23,39 @@ if (!API_KEY) {
 
 const OUTPUT_PATH = path.join(__dirname, '..', 'assets', 'news-data.js');
 const ITEM_COUNT = 10;
+const MAX_TOTAL_ITEMS = 100;
+// ^ Once the archive reaches this many articles, the oldest ones get
+// dropped off the bottom as new ones are added on top — keeps the page
+// (and this file) from growing forever. At 10 new items/day this holds
+// roughly the last 10 days. Raise this number if you want a longer
+// archive, or lower it to keep the page shorter.
+
+function readExistingItems() {
+  if (!fs.existsSync(OUTPUT_PATH)) return [];
+  try {
+    const src = fs.readFileSync(OUTPUT_PATH, 'utf8');
+    const data = new Function(src + '; return NEWS_DATA;')();
+    return (data && Array.isArray(data.items)) ? data.items : [];
+  } catch (e) {
+    console.log(`Could not read existing news-data.js (${e.message}) — starting fresh with no prior items.`);
+    return [];
+  }
+}
+
+function mergeWithExisting(newItems, existingItems) {
+  const existingUrls = new Set(existingItems.map(i => i.sourceUrl));
+  const genuinelyNew = newItems.filter(i => !existingUrls.has(i.sourceUrl));
+  const skipped = newItems.length - genuinelyNew.length;
+  if (skipped > 0) {
+    console.log(`Skipped ${skipped} item(s) already in the archive (matched by sourceUrl).`);
+  }
+  const merged = [...genuinelyNew, ...existingItems];
+  if (merged.length > MAX_TOTAL_ITEMS) {
+    console.log(`Archive would be ${merged.length} items, trimming oldest down to ${MAX_TOTAL_ITEMS}.`);
+    return merged.slice(0, MAX_TOTAL_ITEMS);
+  }
+  return merged;
+}
 
 const SYSTEM_PROMPT = `You find and summarize current automotive industry news for a Canadian car-financing company's website. Search for real, recent news (published within the last few days) covering topics like: new vehicle releases, auto industry trends, car loan/interest rate news in Canada, EV market news, and general car-buying advice trends. Avoid anything overly technical, niche motorsport content, or US-only content that doesn't apply to Canadian readers.
 
@@ -181,10 +214,13 @@ ${entries}
 async function main() {
   console.log('Fetching latest auto news via Anthropic API...');
   try {
-    const newsItems = await generateNews();
-    const fileContent = buildFileContent(newsItems);
+    const newItems = await generateNews();
+    const existingItems = readExistingItems();
+    console.log(`Found ${existingItems.length} existing item(s) already on the site.`);
+    const mergedItems = mergeWithExisting(newItems, existingItems);
+    const fileContent = buildFileContent(mergedItems);
     fs.writeFileSync(OUTPUT_PATH, fileContent, 'utf8');
-    console.log(`Success — wrote ${newsItems.length} news items to ${OUTPUT_PATH}`);
+    console.log(`Success — archive now has ${mergedItems.length} total item(s) at ${OUTPUT_PATH}`);
   } catch (err) {
     console.error('Failed to generate news:', err.message);
     console.error('Leaving the existing assets/news-data.js untouched so the site keeps showing yesterday\'s content rather than breaking.');
