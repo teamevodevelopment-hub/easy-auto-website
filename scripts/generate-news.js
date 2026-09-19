@@ -39,6 +39,34 @@ Respond with ONLY a JSON array (no other text, no markdown code fences) of exact
 
 Only include items where you have a real, verifiable source URL from your search results. If you cannot find 6 genuinely relevant, recent items, return fewer rather than inventing any.`;
 
+function repairTruncatedJsonArray(text) {
+  // Finds every top-level {...} object in the text and parses each one
+  // individually, skipping the last one if it's incomplete. This lets us
+  // recover, say, 4 good items out of an intended 6 rather than nothing.
+  const items = [];
+  let depth = 0;
+  let start = -1;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (ch === '{') {
+      if (depth === 0) start = i;
+      depth++;
+    } else if (ch === '}') {
+      depth--;
+      if (depth === 0 && start !== -1) {
+        const candidate = text.slice(start, i + 1);
+        try {
+          items.push(JSON.parse(candidate));
+        } catch (e) {
+          // skip malformed fragment
+        }
+        start = -1;
+      }
+    }
+  }
+  return items;
+}
+
 async function generateNews() {
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -49,7 +77,7 @@ async function generateNews() {
     },
     body: JSON.stringify({
       model: 'claude-sonnet-5',
-      max_tokens: 2000,
+      max_tokens: 6000,
       system: SYSTEM_PROMPT,
       messages: [
         { role: 'user', content: 'Find today\'s automotive industry news relevant to Canadian car buyers and car financing.' }
@@ -77,7 +105,18 @@ async function generateNews() {
   try {
     newsItems = JSON.parse(cleaned);
   } catch (err) {
-    throw new Error(`Failed to parse JSON from Claude's response. Raw response:\n${fullText}`);
+    // If the response got cut off before the JSON array closed properly
+    // (e.g. an unusually long run of search tool calls ate into the
+    // token budget), try to salvage whichever complete items came
+    // through rather than throwing away the whole run.
+    console.warn('Initial JSON parse failed, attempting to salvage complete items from a possibly truncated response...');
+    const repaired = repairTruncatedJsonArray(cleaned);
+    if (repaired && repaired.length > 0) {
+      console.warn(`Salvaged ${repaired.length} complete item(s) from the truncated response.`);
+      newsItems = repaired;
+    } else {
+      throw new Error(`Failed to parse JSON from Claude's response, and no complete items could be salvaged. Raw response:\n${fullText}`);
+    }
   }
 
   if (!Array.isArray(newsItems) || newsItems.length === 0) {
