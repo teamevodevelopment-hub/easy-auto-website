@@ -77,7 +77,7 @@ async function generateNews() {
     },
     body: JSON.stringify({
       model: 'claude-sonnet-5',
-      max_tokens: 6000,
+      max_tokens: 10000,
       system: SYSTEM_PROMPT,
       messages: [
         { role: 'user', content: 'Find today\'s automotive industry news relevant to Canadian car buyers and car financing.' }
